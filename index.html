@@ -1500,6 +1500,7 @@ function renderFamilia(){
       'Lo que se trabaja: creencias falsas, deseos distintos, intenciones, ironía, metidas de pata, emociones mezcladas, mensajes yo, turnos de conversación y seguridad en línea.'
     ].map(t=>h('li',{text:t}))),
     h('p',{class:'muted',text:'Mundo Mente es un apoyo educativo, no reemplaza evaluación ni terapia profesional. Todo se guarda solo en este dispositivo: no se envía nombre ni datos a ningún lugar.'}),
+    h('p',{class:'muted',text:'Creado por Pablo E.A. Lagos Soto.'}),
     h('button',{class:'btn',type:'button',text:'Borrar los datos de este jugador',onclick:e=>{
       const b=e.target;if(b.dataset.s!=='1'){b.dataset.s='1';b.textContent='¿Seguro? Toca otra vez para borrar';return;}
       DB.profiles=DB.profiles.filter(x=>x.id!==P.id);DB.current=null;save();location.reload();}}));
