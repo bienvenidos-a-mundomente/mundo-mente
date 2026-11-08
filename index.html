@@ -1,0 +1,1622 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#5929AD">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mundo Mente">
+<meta name="description" content="Juego para aprender emociones, amistades, conflictos y calma. De 4 a 18 años.">
+<title>Mundo Mente</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>:root{color-scheme:light;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}html,body{margin:0}</style>
+</head>
+<body>
+<style>
+/* Concepto: red social de pantalla completa. Un post = una tarea. El color de cada post lo da su categoría; el acento lo da el interés de cada niño o niña. */
+:root{
+  --h:262; --ch:262; --fs:1;
+  --bg:#F3F5FB; --surface:#FFFFFF; --ink:#17203D; --muted:#566080; --line:#D3D9EE;
+  --accent:hsl(var(--h) 62% 42%); --on-accent:#FFFFFF; --accent-soft:hsl(var(--h) 75% 92%);
+  --good:#146C43; --good-soft:#D9F2E3; --try:#774900; --try-soft:#FFEFC7;
+  --tint:9%; --shadow:0 6px 18px rgba(23,32,61,.10);
+  --f-display:'Baloo 2','Trebuchet MS',system-ui,sans-serif;
+  --f-body:'Lexend',system-ui,'Segoe UI',sans-serif;
+  font-size:calc(16px * var(--fs));
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1226; --surface:#182041; --ink:#EEF1FF; --muted:#A9B2D6; --line:#2C3764;
+  --accent:hsl(var(--h) 85% 72%); --on-accent:#0D1226; --accent-soft:hsl(var(--h) 38% 22%);
+  --good:#7BE3AB; --good-soft:#12382A; --try:#FFD580; --try-soft:#3B2F10;
+  --tint:15%; --shadow:0 6px 18px rgba(0,0,0,.45); color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0D1226; --surface:#182041; --ink:#EEF1FF; --muted:#A9B2D6; --line:#2C3764;
+  --accent:hsl(var(--h) 85% 72%); --on-accent:#0D1226; --accent-soft:hsl(var(--h) 38% 22%);
+  --good:#7BE3AB; --good-soft:#12382A; --try:#FFD580; --try-soft:#3B2F10;
+  --tint:15%; --shadow:0 6px 18px rgba(0,0,0,.45); color-scheme:dark;}
+:root.calm{--tint:4%}
+:root.hc{--line:var(--ink); --muted:var(--ink); --tint:0%}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.5 var(--f-body);-webkit-text-size-adjust:100%}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3,p{margin:0}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+#app{height:100%;max-width:540px;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
+.shell{height:100%;display:flex;flex-direction:column}
+.ob{height:100%;overflow-y:auto;padding:24px 16px 32px}
+
+/* barra superior */
+.top{display:flex;align-items:center;gap:8px;padding:10px 16px 6px}
+.brand{font:800 1.35rem/1 var(--f-display);color:var(--accent);display:none}
+.sp{flex:1}
+@media(min-width:440px){.brand{display:block}}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--surface);border:2px solid var(--line);font-weight:600;font-size:.9rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+.iconbtn{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;font-size:1.3rem;flex:none;padding:0}
+.ava{background:var(--accent-soft);border-color:var(--accent)}
+.chans{display:flex;gap:8px;overflow-x:auto;padding:4px 16px 10px;scrollbar-width:none}
+.chans::-webkit-scrollbar{display:none}
+.chan{flex:none;padding:8px 14px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-weight:500;white-space:nowrap;min-height:40px}
+.chan[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+
+/* feed */
+.feed{flex:1;min-height:0;overflow-y:auto;scroll-snap-type:y mandatory;scroll-behavior:smooth;overscroll-behavior-y:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.feed::-webkit-scrollbar{display:none}
+.post .pmain{transition:opacity .35s ease,transform .35s ease}
+.post:not(.seen) .pmain{opacity:.45;transform:translateY(16px)}
+:root.calm .post:not(.seen) .pmain{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.post .pmain{transition:none}.post:not(.seen) .pmain{opacity:1;transform:none}}
+.feed.locked{overflow-y:hidden}
+@media(prefers-reduced-motion:reduce){.feed{scroll-behavior:auto}}
+.post{min-height:100%;scroll-snap-align:start;scroll-snap-stop:always;padding:14px 16px 28px;display:flex;flex-direction:column;gap:12px;position:relative;
+  background:var(--bg);background:color-mix(in srgb,hsl(var(--ch) 85% 52%) var(--tint),var(--bg));border-top:1px solid var(--line)}
+.pmain{display:flex;flex-direction:column;gap:12px;padding-right:62px;min-width:0}
+.phead{display:flex;align-items:center;gap:10px;min-width:0;padding-right:62px}
+.pav{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:1.3rem;flex:none;background:hsl(var(--ch) 80% 90%);border:2px solid hsl(var(--ch) 55% 45%)}
+:root[data-theme="dark"] .pav{background:hsl(var(--ch) 35% 24%);border-color:hsl(var(--ch) 60% 65%)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .pav{background:hsl(var(--ch) 35% 24%);border-color:hsl(var(--ch) 60% 65%)}}
+.pname{min-width:0}
+.pname b{display:block;font-weight:600;font-size:.95rem;overflow-wrap:anywhere}
+.pname small{color:var(--muted);font-size:.8rem}
+.badge{margin-left:auto;flex:none;font-size:.78rem;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--surface);border:2px solid var(--line);white-space:nowrap}
+.steps{display:none;gap:6px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+:root.steps-on .steps{display:flex}
+.steps span{padding:3px 10px;border-radius:999px;border:1px dashed var(--muted)}
+.steps span.on{background:var(--ink);color:var(--bg);border-style:solid}
+.scene{display:grid;place-items:center;min-height:116px;border-radius:24px;background:var(--surface);border:2px solid var(--line);font-size:3rem;letter-spacing:.12em;padding:14px;text-align:center;overflow-wrap:anywhere;line-height:1.25}
+.story{font-size:1.2rem;line-height:1.55}
+.q{font:700 1.45rem/1.25 var(--f-display);text-wrap:balance}
+.banner{border-radius:16px;padding:10px 14px;font-size:.92rem;background:var(--accent-soft);border:2px solid var(--accent)}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;min-height:58px;width:100%;text-align:left;padding:12px 14px;border-radius:16px;border:2px solid var(--line);background:var(--surface);font-size:1.05rem;line-height:1.35}
+.opt .n{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.85rem;font-weight:600;background:var(--accent-soft);color:var(--ink)}
+.opt:hover{border-color:var(--accent)}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.ok{border-color:var(--good);background:var(--good-soft)}
+.opt.no{border-color:var(--try);background:var(--try-soft);opacity:.75}
+.opt.dim{opacity:.55}
+.opt.alt{border-style:dashed;background:transparent}
+.opt:disabled{cursor:default}
+.opt.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.fb{border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.fb.ok{background:var(--good-soft);border:2px solid var(--good)}
+.fb.try{background:var(--try-soft);border:2px solid var(--try)}
+.fb strong{font:700 1.15rem var(--f-display)}
+.pts{align-self:flex-start;font-weight:600;font-size:.9rem;padding:2px 12px;border-radius:999px;background:var(--surface);border:2px solid var(--line);font-variant-numeric:tabular-nums}
+.adult{border-radius:16px;padding:12px 14px;font-size:.95rem;border:2px dashed var(--muted);background:var(--surface)}
+.adult b{display:block;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto;padding-top:6px}
+.btn{min-height:50px;padding:10px 22px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-weight:600}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted);text-decoration:underline}
+.btn:disabled{opacity:.45;cursor:default}
+.rail{position:absolute;right:8px;top:70px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.rbtn{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:0;padding:0;font-size:.7rem;color:var(--muted);text-decoration:none;width:50px}
+.rbtn i{font-style:normal;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:2px solid var(--line);font-size:1.25rem;box-shadow:var(--shadow)}
+.rbtn[aria-pressed="true"] i{background:var(--accent-soft);border-color:var(--accent)}
+
+/* interacciones */
+.bubble-wrap{display:grid;place-items:center;min-height:230px}
+.bubble{width:150px;height:150px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 16px var(--accent-soft);transform:scale(.62);transition:transform 4s ease-in-out}
+.bubble.in{transform:scale(1)}
+.bubble.out{transform:scale(.62);transition-duration:6s}
+.cue{text-align:center;font:700 1.3rem var(--f-display);min-height:2em}
+.faces{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.face{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border-radius:14px;border:2px solid var(--line);background:var(--surface);font-size:.7rem;color:var(--muted);min-height:76px}
+.face i{font-style:normal;font-size:1.8rem}
+.face[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.srow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.srow .lbl{width:100px;font-weight:500}
+.dot{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:var(--surface);font-size:1.1rem}
+.dot[aria-pressed="true"]{background:var(--good-soft);border-color:var(--good)}
+.mine{margin:0;padding:10px 14px 10px 36px;border-radius:16px;border:2px dashed var(--line);min-height:48px;display:flex;flex-direction:column;gap:4px}
+.mine:empty::before{content:"Aquí aparecerá tu orden";color:var(--muted);margin-left:-22px;list-style:none}
+.dots{display:flex;gap:6px;justify-content:center}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--accent)}
+.bigstep{font:600 1.3rem/1.4 var(--f-display);text-align:center;padding:18px;border-radius:20px;background:var(--surface);border:2px solid var(--line);min-height:110px;display:grid;place-items:center}
+.chk{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;border-radius:16px;border:2px solid var(--line);background:var(--surface);min-height:56px}
+.chk .bx{flex:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--muted);display:grid;place-items:center;font-size:.9rem}
+.chk[aria-checked="true"]{border-color:var(--good);background:var(--good-soft)}
+.chk[aria-checked="true"] .bx{background:var(--good);color:var(--surface);border-color:var(--good)}
+.phr{display:flex;gap:8px}
+.phr .opt{flex:1}
+.phr .hear{flex:none;width:52px;border-radius:16px;border:2px solid var(--line);background:var(--surface);font-size:1.2rem}
+
+.prev{font-size:.82rem;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap}
+.prev span{padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.rprog{display:flex;align-items:center;gap:10px;padding:0 16px 8px;font-size:.82rem;color:var(--muted)}
+.rprog .bar{flex:1;height:10px}
+.rprog b{color:var(--ink);font-weight:600;white-space:nowrap}
+.chan.quick{border-color:var(--accent);color:var(--ink);background:var(--accent-soft)}
+.count{text-align:center;font:800 2.2rem var(--f-display);min-height:1.3em;font-variant-numeric:tabular-nums}
+.cats{display:flex;flex-wrap:wrap;gap:6px}
+.cats span{padding:4px 12px;border-radius:999px;background:var(--surface);border:2px solid var(--line);font-size:.9rem}
+.srow.col{flex-direction:column;align-items:flex-start;gap:6px}
+.nr .pmain{padding-right:0}
+.dots7{display:flex;gap:6px}
+.d7{flex:1;text-align:center;font-size:.72rem;color:var(--muted)}
+.d7 i{width:100%;max-width:38px;aspect-ratio:1;margin:0 auto 2px;border-radius:50%;border:2px solid var(--line);background:var(--surface);font-style:normal;display:grid;place-items:center;color:var(--ink)}
+.d7.on i{background:var(--good-soft);border-color:var(--good)}
+@media(max-width:380px){.rail{right:2px}.rbtn{width:44px;font-size:0}.rbtn i{width:42px;height:42px}.pmain,.phead{padding-right:50px}.nr .pmain{padding-right:0}}
+/* vistas */
+.view{flex:1;min-height:0;overflow-y:auto;padding:8px 16px 28px;display:flex;flex-direction:column;gap:16px}
+.view h2{font:800 1.5rem/1.2 var(--f-display)}
+.view h3{font:700 1.15rem/1.25 var(--f-display)}
+.panel{background:var(--surface);border:2px solid var(--line);border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.muted{color:var(--muted);font-size:.92rem}
+.bar{height:12px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .4s}
+.hero{display:flex;align-items:center;gap:14px}
+.hero .big{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;font-size:2.4rem;background:var(--accent-soft);border:3px solid var(--accent);flex:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.ach{border-radius:16px;border:2px solid var(--line);padding:10px;display:flex;flex-direction:column;gap:2px;align-items:flex-start;background:var(--surface)}
+.ach.lock{opacity:.5}
+.ach.lock i{filter:grayscale(1)}
+.ach i{font-style:normal;font-size:1.8rem}
+.ach b{font-size:.92rem;line-height:1.25}
+.ach small{color:var(--muted);font-size:.78rem;line-height:1.3}
+.stk{aspect-ratio:1;border-radius:18px;border:2px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--surface);font-size:2.2rem;padding:6px;text-align:center}
+.stk small{font-size:.72rem;color:var(--muted)}
+.stk.lock{opacity:.5}
+.stk.lock span{filter:grayscale(1) brightness(.8)}
+.rw{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+.rw:first-of-type{border-top:0}
+.rw .row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.rw .row b{min-width:0;overflow-wrap:anywhere}
+.sw{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px;border:2px solid var(--line);border-radius:16px;background:var(--surface);min-height:58px}
+.sw .t{min-width:0}
+.sw .t small{display:block;color:var(--muted);font-size:.82rem;line-height:1.3}
+.sw .tg{margin-left:auto;flex:none;width:48px;height:28px;border-radius:99px;background:var(--line);position:relative;transition:background .2s}
+.sw .tg::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transition:transform .2s}
+.sw[aria-checked="true"] .tg{background:var(--accent)}
+.sw[aria-checked="true"] .tg::after{transform:translateX(20px)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg.four{grid-template-columns:1fr 1fr}
+.segb{padding:10px;border-radius:16px;border:2px solid var(--line);background:var(--surface);text-align:left;min-height:62px;line-height:1.3}
+.segb small{display:block;color:var(--muted);font-size:.78rem}
+.segb[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.field{width:100%;min-height:48px;padding:8px 14px;border-radius:14px;border:2px solid var(--line);background:var(--bg)}
+.pre{display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;padding:10px 12px;border-radius:14px;border:2px solid var(--line);background:var(--surface)}
+.pre small{color:var(--muted);font-size:.8rem;line-height:1.3}
+.pre[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.list{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.sbar{display:grid;grid-template-columns:130px 1fr 44px;gap:8px;align-items:center;font-size:.88rem}
+@media(max-width:400px){.sbar{grid-template-columns:100px 1fr 38px}}
+
+/* navegación */
+.nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--line);background:var(--surface)}
+.nav button{border:0;background:none;padding:6px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:0;font-size:.74rem;color:var(--muted);min-height:58px;justify-content:center}
+.nav button span{font-size:1.4rem;line-height:1.2}
+.nav button[aria-current="page"]{color:var(--accent);font-weight:600}
+:root.hc .nav button{color:var(--ink)}
+
+/* hojas y ventanas */
+.sheet-bg{position:fixed;inset:0;background:rgba(8,12,30,.6);z-index:50;display:flex;justify-content:center;align-items:flex-end}
+.sheet-bg.mid{align-items:center;padding:16px}
+.sheet{width:min(540px,100%);max-height:90%;overflow-y:auto;background:var(--bg);border-radius:28px 28px 0 0;padding:16px 16px 28px;display:flex;flex-direction:column;gap:12px}
+.mid .sheet{border-radius:28px;text-align:center;align-items:center;padding:26px 20px;gap:10px}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sheet-head h2{font:800 1.35rem var(--f-display)}
+.emo{font-size:4.2rem;line-height:1.1}
+.chest{font-size:5rem;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-4deg)}}
+.float{position:fixed;z-index:70;font:700 1.3rem var(--f-display);pointer-events:none;color:var(--ink);background:var(--surface);padding:2px 12px;border-radius:99px;border:2px solid var(--accent);animation:rise 1.1s ease-out forwards}
+@keyframes rise{from{transform:translateY(0);opacity:1}to{transform:translateY(-70px);opacity:0}}
+.conf{position:fixed;z-index:70;pointer-events:none;font-size:1.4rem;animation:fly 1s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--dx),var(--dy)) rotate(240deg);opacity:0}}
+:root.calm .conf,:root.calm .chest{animation:none}
+@media(prefers-reduced-motion:reduce){.conf,.chest,.bubble,.float{animation:none}.bubble{transition:none}}
+.int-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.avs{display:flex;gap:10px;flex-wrap:wrap}
+.avs button{width:64px;height:64px;border-radius:50%;border:3px solid var(--line);background:var(--surface);font-size:2rem;padding:0}
+.avs button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.ages{display:flex;flex-wrap:wrap;gap:8px}
+.ages button{width:52px;height:52px;border-radius:14px;border:2px solid var(--line);background:var(--surface);font-weight:600}
+.ages button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.obbig{font:800 2.2rem/1.1 var(--f-display);color:var(--accent)}
+.stack{display:flex;flex-direction:column;gap:12px}
+</style>
+
+<div id="app">
+  <div id="ob" class="ob" hidden></div>
+  <div id="shell" class="shell" hidden>
+    <header class="top">
+      <button id="avaBtn" class="iconbtn ava" aria-label="Mi perfil"></button>
+      <span class="brand">Mundo Mente</span>
+      <span class="sp"></span>
+      <span class="chip" id="hudPts" aria-label="Puntos"></span>
+      <span class="chip" id="hudStreak" aria-label="Días seguidos"></span>
+      <button id="setBtn" class="iconbtn" aria-label="Cómo me gusta jugar">⚙️</button>
+    </header>
+    <nav id="chans" class="chans" aria-label="Canales"></nav>
+    <div id="rprog" class="rprog" aria-live="polite"></div>
+    <main id="feed" class="feed" tabindex="-1"></main>
+    <section id="v-logros" class="view" hidden></section>
+    <section id="v-mundo" class="view" hidden></section>
+    <section id="v-familia" class="view" hidden></section>
+    <nav class="nav" id="nav" aria-label="Secciones">
+      <button data-tab="inicio" aria-current="page"><span>🏠</span>Inicio</button>
+      <button data-tab="logros"><span>🏆</span>Logros</button>
+      <button data-tab="mundo"><span>🎒</span>Mi mundo</button>
+      <button data-tab="familia"><span>👨‍👩‍👧</span>Familia</button>
+    </nav>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* Los métodos nativos escriben la palabra "null" cuando reciben un valor vacío; aquí se ignoran los valores vacíos. */
+['replaceChildren','append'].forEach(function(m){
+  const o=Element.prototype[m];
+  Element.prototype[m]=function(){return o.apply(this,Array.prototype.filter.call(arguments,function(x){return x!=null&&x!==false;}));};
+});
+
+/* Enlace que se comparte por WhatsApp. Si queda vacío se usa la dirección de esta página. */
+const SHARE_URL='';
+
+/* ================= utilidades ================= */
+const $=(s,r=document)=>r.querySelector(s);
+function h(tag,props,...kids){
+  const e=document.createElement(tag);
+  if(props)for(const k in props){const v=props[k];
+    if(v==null||v===false)continue;
+    if(k==='class')e.className=v;
+    else if(k==='text')e.textContent=v;
+    else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);
+    else e.setAttribute(k,v===true?'':v);}
+  for(const c of kids.flat(Infinity)){if(c==null||c===false)continue;e.append(c.nodeType?c:document.createTextNode(c));}
+  return e;
+}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const yesterday=()=>{const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ================= datos: intereses ================= */
+const THEMES={
+  dino:{n:'Dinosaurios',i:'🦖',h:145,av:['🦖','🦕','🥚'],A:{e:'🦖',n:'Rex'},B:{e:'🦕',n:'Dina'},topic:'los dinosaurios',
+    st:[['🥚','Huevo'],['🦴','Fósil'],['🌋','Volcán'],['🌿','Helecho'],['🦕','Cuello largo'],['🦖','Rey del Jurásico']]},
+  space:{n:'Espacio',i:'🚀',h:262,av:['🧑‍🚀','🚀','👽'],A:{e:'🧑‍🚀',n:'Nova'},B:{e:'👽',n:'Zip'},topic:'el espacio',
+    st:[['🌙','Luna'],['🪐','Saturno'],['⭐','Estrella'],['☄️','Cometa'],['🛰️','Satélite'],['🌌','Galaxia']]},
+  animals:{n:'Animales',i:'🐶',h:28,av:['🐶','🐱','🐰'],A:{e:'🐶',n:'Toby'},B:{e:'🐱',n:'Mina'},topic:'los animales',
+    st:[['🐾','Huella'],['🦋','Mariposa'],['🐢','Tortuga'],['🦊','Zorro'],['🦉','Búho'],['🐘','Elefante']]},
+  sea:{n:'Mar',i:'🐬',h:200,av:['🐬','🐙','🧜'],A:{e:'🐬',n:'Delfi'},B:{e:'🐙',n:'Pulpi'},topic:'el mar',
+    st:[['🐚','Concha'],['🦀','Cangrejo'],['🐠','Pez'],['🐳','Ballena'],['🦈','Tiburón'],['🪸','Coral']]},
+  robots:{n:'Robots',i:'🤖',h:222,av:['🤖','🦾','🛠️'],A:{e:'🤖',n:'Beep'},B:{e:'🧑‍🔧',n:'Mecha'},topic:'los robots',
+    st:[['⚙️','Engranaje'],['🔋','Batería'],['💡','Idea'],['🔧','Llave'],['🧲','Imán'],['🤖','Robot maestro']]},
+  vehicles:{n:'Vehículos',i:'🚗',h:4,av:['🚗','🚂','🚁'],A:{e:'🚗',n:'Turbo'},B:{e:'🚂',n:'Chuchú'},topic:'los vehículos',
+    st:[['🚦','Semáforo'],['🚌','Bus'],['🚒','Bombero'],['🚜','Tractor'],['🚁','Helicóptero'],['🚀','Cohete']]},
+  sports:{n:'Fútbol y deportes',i:'⚽',h:88,av:['⚽','🏅','🦁'],A:{e:'🦁',n:'Rugo'},B:{e:'🐯',n:'Tito'},topic:'el fútbol',
+    st:[['🥅','Arco'],['👟','Zapatillas'],['🏆','Copa'],['🥇','Medalla'],['🧤','Guantes'],['⚽','Balón de oro']]},
+  fantasy:{n:'Dragones y magia',i:'🐉',h:300,av:['🐉','🦄','🧙'],A:{e:'🐉',n:'Draco'},B:{e:'🦄',n:'Luma'},topic:'la magia',
+    st:[['🔮','Cristal'],['🏰','Castillo'],['🗝️','Llave mágica'],['🧚','Hada'],['📜','Pergamino'],['👑','Corona']]},
+  music:{n:'Música y arte',i:'🎵',h:335,av:['🎵','🎨','🎸'],A:{e:'🦜',n:'Lora'},B:{e:'🐻',n:'Beto'},topic:'la música',
+    st:[['🥁','Tambor'],['🎹','Piano'],['🎨','Paleta'],['🎺','Trompeta'],['🎻','Violín'],['🎤','Micrófono']]},
+  games:{n:'Videojuegos',i:'🎮',h:168,av:['🎮','👾','🕹️'],A:{e:'👾',n:'Pixel'},B:{e:'🕹️',n:'Joy'},topic:'los videojuegos',
+    st:[['🕹️','Palanca'],['👾','Alien'],['🧩','Puzzle'],['🏁','Meta'],['💎','Diamante'],['🎮','Control dorado']]}
+};
+
+const CATS={
+  mind:{n:'Detective de mentes',i:'🧠',u:'@detective_de_mentes',h:272,c:'Mentes'},
+  emo:{n:'Emociones',i:'😊',u:'@mapa_de_emociones',h:340,c:'Emociones'},
+  conf:{n:'Resolver conflictos',i:'🕊️',u:'@puentes_de_paz',h:172,c:'Conflictos'},
+  talk:{n:'Conversar',i:'💬',u:'@club_de_conversacion',h:208,c:'Conversar'},
+  calm:{n:'Calma y sentidos',i:'🌿',u:'@rincon_de_calma',h:142,c:'Calma'},
+  team:{n:'En familia',i:'👨‍👩‍👧',u:'@juntos_en_familia',h:38,c:'Juntos'},
+  digi:{n:'Mundo online',i:'🌐',u:'@mundo_online',h:250,c:'Online'},
+  vida:{n:'Vida adulta',i:'🧭',u:'@camino_a_la_vida_adulta',h:60,c:'Vida adulta'}
+};
+const LEVELS=[
+  {n:'Nivel 1',a:'4 a 6 años',d:'Mucho apoyo visual y frases cortas'},
+  {n:'Nivel 2',a:'7 a 9 años',d:'Historias breves y primeras decisiones propias'},
+  {n:'Nivel 3',a:'10 a 12 años',d:'Ironía, grupos, emociones mezcladas'},
+  {n:'Nivel 4',a:'13 a 14 años',d:'Redes, presión de grupo, pensamiento crítico'},
+  {n:'Nivel 5',a:'15 a 18 años',d:'Autonomía y preparación para la vida adulta'}
+];
+const ADULT_TIP={
+  mind:'Pregunte con curiosidad: “¿Cómo lo supiste?” y “¿Qué estará pensando esa persona?”. Evite corregir de inmediato.',
+  emo:'Pregunte: “¿Cuándo te has sentido así?” y “¿Qué te ayudó?”. Nombre la emoción sin juzgarla antes de aconsejar.',
+  conf:'Pregunte: “¿Qué harías tú?” y “¿Y si la otra persona se enoja?”. Ensayen la frase en un juego de roles, cambiando de papel.',
+  talk:'Practiquen la frase juntos, primero usted y luego el niño o la niña. Celebre el intento, no la perfección.',
+  calm:'Háganlo juntos: la calma se contagia y modelarla enseña más que explicarla.',
+  digi:'Pregunte: “¿Te ha pasado algo parecido?”. Acuerden a quién avisar y qué hacer, sin castigar por contar lo que pasó en línea.',
+  team:'',
+  vida:'Pregunte “¿qué quieres tú?” y “¿qué apoyo necesitas?”. Apoye a decidir sin decidir por la persona y acompañe sin hablar en su lugar.'
+};
+
+/* ================= datos: posts ================= */
+/* t=categoría, lv=niveles (0 a 3), who: both | alone | together, k=tipo. {A},{B}: compañeros del interés; {a},{b}: sus emojis */
+const CARDS=[
+/* ---- Detective de mentes ---- */
+{id:'m1',t:'mind',lv:[0,1],k:'choice',scene:'{a} 🧸 📦🔴 📦🔵',story:'{A} guarda su osito en la caja roja y sale a jugar. Mientras {A} no está, {B} cambia el osito a la caja azul.',q:'Cuando {A} vuelva, ¿dónde va a buscar su osito?',o:['En la caja roja 🔴','En la caja azul 🔵'],ok:0,hint:'¿{A} vio que {B} lo cambió?',why:'{A} no vio el cambio, así que busca donde cree que está. Las personas actúan según lo que creen, aunque no sea verdad.'},
+{id:'m2',t:'mind',lv:[0,1],k:'choice',scene:'📦 “Lápices” ✏️ ➜ 🧸',story:'Esta caja dice “Lápices”, pero adentro hay un osito. {A} llega y todavía no abre la caja.',q:'¿Qué cree {A} que hay adentro?',o:['Lápices ✏️','Un osito 🧸'],ok:0,hint:'{A} solo ve la caja por fuera.',why:'{A} todavía no miró adentro, así que cree lo que dice la caja. Tú sabes la verdad y {A} no. ¡Saber cosas distintas es normal!'},
+{id:'m3',t:'mind',lv:[0,1],k:'choice',scene:'{a} 🍫   {b} 🍓',story:'A {A} le encanta el helado de chocolate. A {B} le encanta el de frutilla. Hoy {A} va a regalarle un helado a {B}.',q:'¿Cuál debería elegir {A}?',o:['Chocolate 🍫','Frutilla 🍓'],ok:1,hint:'Piensa en lo que le gusta a {B}.',why:'Cada persona quiere cosas distintas. Para alegrar a alguien, pensamos en lo que le gusta a esa persona.'},
+{id:'m4',t:'mind',lv:[0],k:'choice',scene:'{a} 👀 📦⚽   {b} 🙈',story:'{A} mira dentro de la caja y ve una pelota. {B} tiene los ojos tapados y no mira.',q:'¿Quién sabe qué hay en la caja?',o:['{A}','{B}','Los dos'],ok:0,hint:'¿Quién miró?',why:'Quien mira, sabe. {B} no miró, así que todavía no lo sabe.'},
+{id:'m5',t:'mind',lv:[0,1],k:'choice',scene:'🏃 💥 😮',story:'{A} va corriendo y, sin querer, choca con {B}. {A} abre mucho los ojos y dice “¡Ay!”.',q:'¿{A} quiso chocar?',o:['No, fue sin querer','Sí, quiso hacer daño'],ok:0,hint:'Mira la cara de {A} y lo que pasó.',why:'Fue un accidente: la cara de sorpresa y el “¡Ay!” son pistas. Cuando es sin querer, se puede decir “no pasa nada” y ayudar.'},
+{id:'m6',t:'mind',lv:[1,2],k:'choice',scene:'{a} 🎁🤫  {b} 👂',story:'{A} prepara un regalo sorpresa para {B}. {B} escuchó el secreto sin querer, pero {A} no se dio cuenta de que {B} escuchó.',q:'¿Qué cree {A}?',o:['Que {B} ya sabe la sorpresa','Que {B} no sabe nada de la sorpresa','Que {B} no quiere regalos'],ok:1,hint:'¿{A} sabe que {B} escuchó?',why:'{A} cree que {B} no sabe, aunque en realidad sí sabe. Pensar en lo que otra persona piensa es un nivel más difícil: ¡lo lograste!'},
+{id:'m7',clues:['Lo que dice: “no importa”.','Cómo lo dice: voz bajita, boca apretada, mirada al suelo.','Lo que pasó: perdió el juego.','Cuando las palabras y el cuerpo no coinciden, el cuerpo da más información.'],t:'mind',lv:[1,2,3,4],k:'choice',scene:'{a} 😶 “No importa…”',story:'{A} perdió el juego y dice “no importa” con voz bajita, la boca apretada y mirando al suelo.',q:'¿Qué puede estar sintiendo {A} de verdad?',o:['Alegría','Tristeza o rabia, aunque diga que no','No siente nada'],ok:1,hint:'Mira qué dicen la voz, la boca y la mirada.',why:'A veces escondemos lo que sentimos. La voz, la cara y el cuerpo dan pistas. Si te importa, puedes preguntar: “¿Quieres contarme?”.'},
+{id:'m8',t:'mind',lv:[1,2],k:'choice',scene:'{a} 👀 6️⃣ ↔ 9️⃣ 👀 {b}',story:'En el suelo hay un número grande. {A} lo mira desde un lado y dice “¡Es un 6!”. {B} lo mira desde el lado contrario y dice “¡Es un 9!”.',q:'¿Quién tiene razón?',o:['Solo {A}','Solo {B}','Los dos: miran desde lugares distintos'],ok:2,hint:'¿Desde dónde mira cada uno?',why:'Desde cada lugar se ve distinto. Cuando hay un desacuerdo, ayuda preguntar: “¿Desde dónde lo ves tú?”.'},
+{id:'m9',clues:['Lo que dice: “¡Qué día perfecto!”.','Lo que pasa: llueve fuerte y {A} se cayó al charco.','La cara de {B}: cansada, no contenta.','Si lo que dice no coincide con lo que pasa y con su cara, puede ser ironía: dice lo contrario de lo que siente.'],t:'mind',lv:[2,3,4],k:'choice',scene:'🌧️ {a}💦 😒',story:'Está lloviendo a cántaros. {A} se cae en un charco y {B} dice, con cara de cansancio: “¡Qué día perfecto!”.',q:'¿Qué quiso decir {B}?',o:['Que de verdad le encanta este día','Que el día va mal; lo dijo al revés (ironía)','Que quiere ir a nadar'],ok:1,hint:'Compara lo que dice con su cara y con lo que pasó.',why:'La ironía dice una cosa para decir lo contrario. Las pistas son el tono de voz, la cara y la situación. Si dudas, puedes preguntar: “¿Lo dices en serio?”.'},
+{id:'m10',clues:['Lo que dijo {A}: algo malo de una camiseta.','Quién estaba detrás: {B}, con esa camiseta.','{A} no sabía que {B} estaba ahí.','Decir algo sin saber que afecta a alguien es una metida de pata y se arregla con una disculpa corta.'],t:'mind',lv:[2,3,4],k:'choice',scene:'{a} 💬 😬 {b} 👕',story:'En el recreo {A} dice: “¡Qué fea esa camiseta del equipo rojo!”. Sin darse cuenta, {B}, que está justo detrás, lleva puesta esa camiseta.',q:'¿Qué puede hacer {A} al darse cuenta?',o:['Hacerse el distraído y no decir nada','Decir: “Perdón, no vi que estabas ahí. Cada uno tiene su equipo”','Reírse más fuerte'],ok:1,hint:'Una disculpa corta y sincera repara.',why:'Se llama “metida de pata”: pasa porque {A} no sabía algo. Lo mejor es disculparse en breve, sin dramatizar, y seguir.'},
+{id:'m11',clues:['La frase: “mariposas en la guata”.','¿Hay mariposas de verdad? No: es una forma de decir otra cosa.','Cuándo lo dice: antes de salir al escenario.','Antes de actuar, muchas personas sienten nervios en la guata.'],t:'mind',lv:[1,2],k:'choice',scene:'{a} 🦋🦋 en la guata',story:'Antes de salir al escenario, {A} dice: “Tengo mariposas en la guata”.',q:'¿Qué quiere decir?',o:['Que tiene nervios','Que se comió unas mariposas','Que tiene hambre'],ok:0,hint:'Es una frase con otro significado.',why:'Hay frases que no significan lo que dicen palabra por palabra. Si no la entiendes, puedes preguntar: “¿Qué quieres decir con eso?”. ¡Preguntar es muy inteligente!'},
+{id:'m12',t:'mind',lv:[2,3,4],who:'alone',k:'choice',scene:'🎁🖼️ 😬',story:'{B} te regala un dibujo que hizo con mucho esfuerzo. A ti no te gusta tanto, pero ves que {B} espera tu reacción.',q:'¿Qué dirías?',o:['“Está horrible”','“Gracias por hacerlo para mí. Me gusta cómo usaste los colores”','Nada, y me voy'],ok:1,hint:'¿Puedes decir algo verdadero y amable a la vez?',why:'Se puede ser sincero y amable: eliges algo verdadero y bueno para decir. No hace falta decir todo lo que piensas, ni mentir.'},
+/* ---- Emociones ---- */
+{id:'e1',t:'emo',lv:[0],k:'choice',scene:'{a} 🎉🎈',story:'{A} salta y se ríe porque llegó su mejor amigo.',q:'¿Qué siente {A}?',o:['😀 Alegría','😢 Tristeza','😠 Rabia'],ok:0,hint:'Mira la sonrisa y los saltos.',why:'La sonrisa y los saltos muestran alegría.'},
+{id:'e2',t:'emo',lv:[0],k:'choice',scene:'{b} 🍦💧 😢',story:'A {B} se le cayó el helado al suelo. Tiene los ojos mojados y la boca hacia abajo.',q:'¿Qué siente {B}?',o:['😀 Alegría','😢 Tristeza','😮 Sorpresa'],ok:1,hint:'Mira los ojos y la boca.',why:'Las lágrimas y la boca hacia abajo muestran tristeza. Podemos ayudar con un abrazo o con palabras amables.'},
+{id:'e3',t:'emo',lv:[0,1],k:'choice',scene:'⛈️ {a} 🙈',story:'Se escucha un trueno muy fuerte. {A} se tapa los oídos y se esconde detrás de una silla.',q:'¿Qué siente {A}?',o:['😨 Miedo','😀 Alegría','😴 Sueño'],ok:0,hint:'¿Por qué se esconde?',why:'Esconderse y taparse los oídos son pistas de miedo. Tener miedo es normal. Un lugar seguro y un abrazo ayudan.'},
+{id:'e4',t:'emo',lv:[0,1,2],k:'choice',open:true,scene:'😠 ➜ ✊ 🔥 💓',story:'Cuando sientes rabia, tu cuerpo avisa antes que tu cabeza.',q:'¿Dónde sientes tú la rabia?',o:['En las manos (puños apretados)','En la cara (caliente)','En la guata (un nudo)','En el pecho (late fuerte)'],why:'¡Todas sirven! Tu cuerpo te avisa. Si lo notas a tiempo, puedes parar, respirar y elegir qué hacer.'},
+{id:'e5',t:'emo',lv:[0,1,2,3,4],k:'scale',scene:'🌡️',story:'El termómetro de emociones dice qué tan grande es lo que sientes. No hay números malos.',q:'¿Cómo está tu cuerpo ahora mismo?'},
+{id:'e6',t:'emo',lv:[1,2,3,4],k:'choice',scene:'🎉 ❤️ y 😰',story:'{A} quiere ir a una fiesta, pero también siente miedo de no conocer a nadie.',q:'¿Se pueden sentir dos cosas a la vez?',o:['Sí, es normal sentir dos emociones a la vez','No, solo se puede sentir una'],ok:0,hint:'Piensa si alguna vez quisiste algo y a la vez te dio miedo.',why:'Sí. Podemos querer algo y tener miedo al mismo tiempo. Eso es un conflicto interno y se puede resolver con pasos pequeños.'},
+{id:'e7',t:'emo',lv:[1,2,3,4],who:'alone',k:'choice',scene:'🎉 ¿y ahora?',story:'{A} quiere ir a la fiesta, pero siente miedo. Te pide un consejo.',q:'¿Qué plan le ayuda más?',o:['Ir con alguien de confianza, quedarse un ratito y después decidir si sigue','No ir nunca a ninguna fiesta','Ir y no hablar con nadie'],ok:0,hint:'Un paso pequeño es más fácil que uno gigante.',why:'Un paso pequeño ayuda: ir acompañado, quedarse poco y decidir después. Así el miedo baja sin obligarte a todo de golpe.'},
+{id:'e8',t:'emo',lv:[1,2,3,4],who:'alone',k:'choice',scene:'🧱💥 😤',story:'Estás armando algo y se desarma por tercera vez. Sientes ganas de romperlo todo.',q:'¿Qué haces primero?',o:['Respiro, suelto las manos y pido un descanso','Lo rompo','Me digo “soy un fracaso”'],ok:0,hint:'Primero calma al cuerpo.',why:'La frustración baja cuando le das una pausa. Equivocarse es parte de aprender: el cerebro aprende más cuando prueba de nuevo.'},
+{id:'e9',t:'emo',lv:[2,3,4],who:'alone',k:'choice',scene:'🌙📝 💭',story:'Mañana hay una prueba y no puedes dormir pensando “me va a ir mal”.',q:'¿Qué pensamiento te ayuda más?',o:['“Estudié lo que pude y, si no entiendo algo, puedo pedir ayuda”','“Seguro repruebo”','“Da lo mismo, nada importa”'],ok:0,hint:'Busca el pensamiento realista y amable contigo.',why:'Los pensamientos cambian cómo nos sentimos. Un pensamiento realista y amable baja los nervios; el catastrofista los sube.'},
+{id:'e10',t:'emo',lv:[2,3,4],k:'choice',open:true,scene:'🎂🚪 💭',story:'Te enteras de que todos tus amigos fueron a un cumpleaños y a ti no te invitaron.',q:'¿Qué emociones podrías sentir?',o:['Tristeza','Rabia','Vergüenza','Celos'],why:'Todas son posibles y ninguna es mala. Lo importante es lo que haces después. Ponerle nombre a la emoción ayuda a calmarla.'},
+/* ---- Resolver conflictos ---- */
+{id:'c1',t:'conf',lv:[0,1],k:'choice',scene:'{a} 🧸 ⚔️ 🧸 {b}',story:'{A} y {B} quieren el mismo juguete al mismo tiempo.',q:'¿Qué pueden hacer?',o:['Turnos: primero uno y después el otro','Gritar más fuerte','Quitárselo'],ok:0,hint:'Una idea donde juegan los dos.',why:'Los turnos ayudan a que los dos jueguen. Se puede usar un reloj de arena o contar hasta 20.'},
+{id:'c2',t:'conf',lv:[0,1],k:'order',scene:'🧩 ➜ 🕊️',story:'Cuando hay un problema, hay pasos que ayudan. Toca los pasos en orden.',q:'¿Cuál va primero, segundo, tercero y cuarto?',steps:['🌬️ Respiro','🗣️ Digo cómo me siento','👂 Escucho al otro','💡 Buscamos una idea juntos'],why:'Primero calmo el cuerpo, luego digo lo mío, escucho y busco una solución para los dos.'},
+{id:'c3',t:'conf',lv:[0,1,2],k:'order',scene:'🙏',story:'Pedir perdón también tiene pasos. Tócalos en orden.',q:'¿Cómo se pide perdón?',steps:['👀 Miro a la persona','🗣️ Digo qué hice','💬 Digo “perdón”','🔧 Pregunto cómo puedo arreglarlo'],why:'Un buen perdón dice qué pasó, pide disculpas y ofrece reparar. Así la otra persona se siente escuchada.'},
+{id:'c4',t:'conf',lv:[1,2,3,4],k:'choice',scene:'{b} 💥🖼️',story:'{B} rompió sin querer tu dibujo. Sientes mucha rabia.',q:'¿Qué frase ayuda más?',o:['“Eres un torpe”','“Me siento triste porque se rompió mi dibujo. ¿Me ayudas a arreglarlo?”','No decir nada y no hablarle más'],ok:1,hint:'Di cómo te sientes y qué necesitas.',why:'Decir “me siento… cuando… necesito…” se llama mensaje yo. Hace que te escuchen sin pelear.'},
+{id:'c5',t:'conf',lv:[1,2,3,4],k:'say',scene:'🗣️',story:'Practica el mensaje yo. Elige una frase, dila en voz alta (o muéstrasela a tu adulto) y marca cuando lo hiciste.',q:'Mensaje yo',phrases:['Me da rabia cuando me interrumpen. Necesito terminar mi idea.','Me siento mal cuando me quitan mis cosas. Necesito que me las pidan.','Me asusta cuando gritan. Necesito que hablen más despacio.']},
+{id:'c6',t:'conf',lv:[1,2,3,4],who:'alone',k:'choice',scene:'⚽ ↔ 🃏',story:'Tú quieres jugar fútbol en el recreo y {B} quiere jugar cartas.',q:'¿Qué solución sirve para los dos?',o:['Primero 10 minutos de cada juego','Siempre lo que yo quiero','No juego nunca más con {B}'],ok:0,hint:'Busca algo en lo que ganen los dos.',why:'Negociar es buscar algo que funcione para los dos. Los turnos y las mitades son soluciones clásicas.'},
+{id:'c7',t:'conf',lv:[2,3,4],k:'choice',scene:'📱😞 👥',story:'En el curso, varios se burlan de un compañero que lo está pasando mal. Tú lo ves.',q:'¿Qué es lo más útil y seguro?',o:['Reírme para que no me hagan lo mismo','Acompañar a esa persona y avisar a un adulto de confianza','Hacer como que no vi'],ok:1,hint:'Ayudar no significa ponerte en peligro.',why:'Ser testigo cuenta. Puedes ayudar sin ponerte en peligro: acompañar, no reírte y avisar a un adulto.'},
+{id:'c8',t:'conf',lv:[0,1,2,3,4],who:'alone',k:'choice',scene:'🤗 ✋',story:'Un amigo quiere abrazarte, pero hoy no tienes ganas.',q:'¿Qué dices?',o:['“Hoy no quiero abrazo, pero sí chocar la mano”','Lo empujo','Me dejo abrazar aunque no quiera'],ok:0,hint:'Tu cuerpo es tuyo.',why:'Puedes decir que no con respeto y proponer otra cosa. También respetamos cuando otros dicen que no.'},
+{id:'c9',t:'conf',lv:[3,4],k:'choice',scene:'🧑‍🤝‍🧑 💢 🗣️🗣️🗣️',story:'En un trabajo grupal todos hablan a la vez y nadie escucha.',q:'¿Qué propones?',o:['Turnos de un minuto para cada idea y después votar','Hacerlo yo solo','Hablar más fuerte que los demás'],ok:0,hint:'Una regla simple que todos puedan seguir.',why:'Ordenar la conversación con turnos y una forma de decidir baja la tensión. Proponer una regla es liderar sin mandar.'},
+{id:'c10',t:'conf',lv:[2,3,4],who:'alone',k:'choice',scene:'🎂 ↔ ⚽',story:'El mismo día tienes el cumpleaños de un amigo y el entrenamiento. Quieres ir a los dos y no puedes.',q:'¿Qué haces?',o:['Pienso qué es más importante hoy, elijo y aviso con cariño a la otra parte','No contesto ningún mensaje','Digo que sí a los dos y falto a uno sin avisar'],ok:0,hint:'Decidir y avisar a tiempo cuida a los demás.',why:'Tener dos deseos a la vez es un conflicto interno normal. Pensar los pros y los contras, decidir y avisar a tiempo cuida tu relación con las personas.'},
+/* ---- Conversar ---- */
+{id:'t1',t:'talk',lv:[0,1],k:'choice',scene:'⚽ 👦👧 ➜ 🙋',story:'Hay niños jugando a la pelota y tú quieres jugar.',q:'¿Qué puedes decir?',o:['“¿Puedo jugar con ustedes?”','Llevarme la pelota','Quedarme mirando sin decir nada'],ok:0,hint:'Una pregunta amable abre la puerta.',why:'Pedir entrar al juego con una pregunta amable funciona. Si dicen que no, puedes buscar otro juego: no es tu culpa.'},
+{id:'t2',t:'talk',lv:[0,1],k:'choice',scene:'{b} 🐕 💬',story:'{B} te cuenta que tiene un perro nuevo.',q:'¿Qué puedes hacer para seguir la conversación?',o:['Preguntar: “¿Cómo se llama?”','Hablar solo de lo mío','Irme sin decir nada'],ok:0,hint:'Conversar es como pasar una pelota.',why:'Conversar es pasar la pelota: me toca, te toca. Una pregunta devuelve la pelota a la otra persona.'},
+{id:'t3',t:'talk',lv:[0,1],k:'say',scene:'👋',story:'Practica presentarte. Elige una frase, dila en voz alta (o muéstrala) y marca cuando lo hiciste.',q:'Saludar y presentarme',phrases:['Hola, me llamo {yo}. ¿Y tú?','Hola, ¿quieres jugar conmigo?','Hola, me interesa {topic}. ¿Y a ti qué te interesa?']},
+{id:'t4',t:'talk',lv:[0,1,2],k:'choice',scene:'🎨 {b}',story:'{B} te muestra un dibujo que hizo.',q:'¿Qué puedes decirle?',o:['“Me gustan los colores que usaste”','“Está feo”','Nada'],ok:0,hint:'Algo que de verdad notaste y es amable.',why:'Un comentario amable y concreto, sobre algo que de verdad notaste, hace sentir bien a la otra persona.'},
+{id:'t5',t:'talk',lv:[1,2,3,4],who:'alone',k:'choice',scene:'📝 ❓',story:'No entiendes una parte de la tarea.',q:'¿Cómo pides ayuda?',o:['Levanto la mano y digo: “No entendí esta parte, ¿me la explicas?”','Me quedo callado y espero que pase','Rompo la hoja'],ok:0,hint:'Di qué parte no entiendes.',why:'Pedir ayuda es una habilidad fuerte. Decir qué parte no entiendes hace que la ayuda sea más rápida.'},
+{id:'t6',t:'talk',lv:[1,2],k:'choice',scene:'{a} 💬💬💬 {b} 🥱',story:'Te encantan {topic}. Hablas mucho de eso y {B} bosteza, mira hacia otro lado y dice “ajá”.',q:'¿Qué pista te da {B}?',o:['Quizás se cansó del tema: puedo preguntarle a {B} qué es lo que más le gusta','Hablar más fuerte para que escuche','Seguir igual: no pasa nada'],ok:0,hint:'Mira el bostezo y la mirada.',why:'Tus intereses son geniales y puedes compartirlos. Para que la conversación sea de los dos, dejamos un espacio y preguntamos por lo que le gusta a la otra persona.'},
+{id:'t7',clues:['Lo que hace el cuerpo: brazos cruzados y mira el reloj.','Lo que dice: una sola palabra.','Son pistas, no certezas: no sabemos seguro.','Cuando dudamos, podemos preguntar con calma.'],t:'talk',lv:[1,2,3,4],k:'choice',scene:'{b} 🙅 ⌚ 💬',story:'Mientras hablas, {B} cruza los brazos, mira el reloj y responde con una sola palabra.',q:'¿Qué puede significar?',o:['Quizás tiene apuro o no quiere seguir; puedo preguntar “¿seguimos otro rato?”','Seguro me odia','Que quiere que hable más fuerte'],ok:0,hint:'El cuerpo da pistas, pero no certezas.',why:'El cuerpo da pistas, pero solo son pistas: no sabemos seguro. Lo mejor es preguntar con calma en vez de suponer lo peor.'},
+{id:'t8',t:'talk',lv:[1,2,3,4],k:'choice',scene:'🚪 👋',story:'Tienes que irte, pero la conversación sigue.',q:'¿Cómo terminas bien?',o:['“Me tengo que ir, ¡hablamos luego!”','Me voy sin decir nada','Me quedo aunque tenga que irme'],ok:0,hint:'Avisar es parte de ser amable.',why:'Avisar que te vas y despedirte hace que la otra persona no se confunda ni se sienta ignorada.'},
+{id:'t9',t:'talk',lv:[2,3,4],k:'say',scene:'✋ 🙂',story:'Decir que no con respeto se practica. Elige una frase, dila (o muéstrala) y marca cuando lo hiciste.',q:'Decir que no',phrases:['No, gracias, prefiero no hacerlo.','Hoy no puedo, quizás otro día.','Eso no me gusta. ¿Hacemos otra cosa?']},
+/* ---- Calma y sentidos ---- */
+{id:'k1',t:'calm',lv:[0,1,2,3,4],k:'breathe',scene:'🎈',story:'Respira con el globo: cuando sube, inspira y cuenta 1, 2, 3, 4. Cuando baja, suelta el aire y cuenta hasta 6. Si respiras muy rápido, cuenta más lento. Toca el botón para empezar y vuelve a tocarlo si quieres parar.',q:'Respiración de globo'},
+{id:'k2',t:'calm',lv:[0,1,2,3,4],k:'senses',scene:'👀 ✋ 👂 👃 👅',story:'Mira a tu alrededor con calma. Por cada cosa que encuentres, toca un círculo. Por ejemplo: veo una mesa, entonces toco un círculo en “ves”.',q:'Encuentra cosas con tus sentidos'},
+{id:'k3',t:'calm',lv:[0,1,2,3,4],k:'steps',scene:'💪 😮‍💨',story:'Tu cuerpo puede soltar la tensión. Sigue los pasos con calma.',q:'Aprieta y suelta',steps:['Aprieta tus manos fuerte, como si exprimieras un limón 🍋','Ahora suelta. Siente tus manos blandas.','Sube los hombros hasta las orejas.','Suéltalos de golpe. ¡Ahhh! 😮‍💨','Cierra los ojos un momento y respira lento.','Abre los ojos. ¿Cómo está tu cuerpo ahora?']},
+{id:'k4',t:'calm',lv:[0,1,2,3,4],k:'steps',scene:'{a} 🏃  {b} 🐢',story:'Si tu cuerpo necesita movimiento, hagamos una pausa activa.',q:'Pausa de movimiento',steps:['Salta 5 veces como {A}.','Camina muy lento, como {B}.','Estírate hacia el cielo y cuenta hasta 5.','Sacude las manos y los pies.','Siéntate y respira 3 veces.']},
+{id:'k5',t:'calm',lv:[0,1,2,3,4],k:'choice',open:true,calmtool:true,scene:'🧰',story:'Cada cuerpo se calma de manera distinta. Elige lo que más te ayuda cuando sientes mucho. Puedes elegir más de uno.',q:'¿Qué te ayuda a calmarte?',o:['🤗 Un abrazo fuerte o una manta pesada','🎧 Silencio o música suave','🌙 Luz tenue y un lugar tranquilo','🏃 Moverme o saltar'],why:'Guardé tu elección en tu caja de calma. Tu adulto la puede ver en la pestaña Familia.'},
+/* ---- En familia (solo con adulto) ---- */
+{id:'f1',t:'team',lv:[0,1,2,3,4],who:'together',k:'together',scene:'🎭 😀 😢 😠',story:'Un juego de caras para jugar juntos.',q:'Adivina la emoción',tasks:['Uno hace una cara de emoción sin hablar y el otro adivina. Digan en qué se fijaron (cejas, boca, ojos).','Cambian de turno.','Cada uno cuenta una vez en que sintió esa emoción.'],adult:'Valide antes de aconsejar. Si aparece una emoción difícil, nómbrela sin juzgar: “Parece rabia. Es normal sentirla”.'},
+{id:'f2',t:'team',lv:[0,1],who:'together',k:'together',scene:'📦 🧸 🔄 📦',story:'Un teatro para entender qué piensan los demás.',q:'¿Dónde va a buscar?',tasks:['El adulto sale de la habitación (o cierra los ojos) mientras tú escondes un objeto en la caja A.','Mientras el adulto no ve, cambias el objeto a la caja B.','Antes de que vuelva, te preguntan: “¿Dónde va a buscar?”.','El adulto busca donde creía que estaba. ¡Y explican por qué!'],adult:'Si responde “en la caja B”, pregunte con curiosidad: “¿Yo vi el cambio?”. No corrija enseguida; deje que lo descubra y repitan cambiando de papeles.'},
+{id:'f3',t:'team',lv:[0,1],k:'order',scene:'🌙',story:'Una rutina que se repite da tranquilidad. Toca los pasos de la noche en orden.',q:'Rutina de la noche',steps:['🛁 Baño','👕 Pijama','🦷 Dientes','📖 Cuento','💡 Luz apagada'],why:'Saber qué viene después da calma. Pueden dibujarla juntos y pegarla en la pared.',adult:'Una rutina visual reduce las discusiones de la noche. Anticipe cada paso y mantenga el mismo orden varios días.'},
+{id:'f4',t:'team',lv:[1,2,3,4],who:'together',k:'together',scene:'📱 ⏰ 🤝',story:'Un acuerdo hecho entre los dos funciona mejor que una orden.',q:'Acuerdo de pantallas',tasks:['Cada uno dice qué es lo que más le gusta de las pantallas.','Elijan juntos cuánto tiempo, a qué hora y dónde se guardan los aparatos.','Decidan qué pasa cuando se acaba el tiempo: aviso 5 minutos antes, guardar la partida y qué actividad sigue.','Escríbanlo o dibújenlo y péguenlo a la vista.'],adult:'Un acuerdo que el niño, la niña o adolescente ayudó a escribir se cumple más que una regla impuesta. Avise 5 minutos antes y mantenga lo acordado con calma.'},
+{id:'f5',t:'team',lv:[2,3,4],who:'together',k:'together',scene:'🪑 🗣️ 👂',story:'Escuchar sin arreglar es una habilidad para toda la familia.',q:'Dos minutos sin consejos',tasks:['Uno habla 2 minutos sobre algo que le preocupa y algo que le ilusiona.','El otro solo escucha y al final dice: “Lo que escuché fue…”.','Cambian de turno.'],adult:'El desafío es no aconsejar ni corregir. Pregunte: “¿Quieres consejo o solo que te escuche?”. Esto abre la conversación en la adolescencia.'},
+{id:'f6',t:'team',lv:[0,1,2,3,4],who:'together',k:'together',scene:'🌅 🤝',story:'Después de una pelea, reparar es más importante que tener razón.',q:'Hacer las paces',tasks:['Respiren juntos tres veces.','Cada uno dice: “Yo hice… y me sentí…”.','Cada uno dice una cosa que puede hacer distinto la próxima vez.','Terminen con algo que les guste: un abrazo, chocar las manos o una sonrisa.'],adult:'Modele primero: asuma su parte y use mensajes yo. Reparar enseña más que ganar la discusión.'},
+/* ---- Mundo online ---- */
+{id:'d1',t:'digi',lv:[0,1],k:'choice',scene:'⏰ 📱 ➜ 🧸',story:'Suena la alarma: se acabó el tiempo de la tablet.',q:'¿Qué hago?',o:['La apago, la guardo y voy a mi siguiente actividad','Grito y sigo jugando','La escondo para jugar después'],ok:0,hint:'Un plan hace más fácil dejar la pantalla.',why:'Es difícil dejar algo que te gusta. Ayuda tener un plan: apagar, guardar y saber qué viene después.'},
+{id:'d2',t:'digi',lv:[0,1],who:'alone',k:'choice',scene:'🖥️ 👤 ❓',story:'Alguien que no conoces te escribe en el juego: “Hola, ¿dónde vives?”.',q:'¿Qué haces?',o:['No contesto y busco a mi adulto','Le digo dónde vivo','Le mando una foto'],ok:0,hint:'Los datos personales se cuidan.',why:'Nunca des tu dirección, tu colegio ni fotos a personas que no conoces. Siempre se lo cuentas a un adulto de confianza, aunque parezca amable.'},
+{id:'d3',t:'digi',lv:[1,2,3,4],who:'alone',k:'choice',scene:'🎮 💬 😠',story:'En un juego en línea, alguien te escribe: “Eres malísimo”.',q:'¿Qué haces?',o:['Silencio o bloqueo a esa persona y sigo con quienes me tratan bien','Insulto de vuelta','Dejo de jugar para siempre'],ok:0,hint:'No tienes que responder a todo.',why:'Silenciar y bloquear son herramientas para cuidarte. Si el trato es grave, guarda una captura de pantalla y cuéntaselo a un adulto.'},
+{id:'d4',clues:['Lo que escribe: “ok.”, sin emojis.','En un mensaje no se ve la cara ni se escucha la voz.','Puede significar muchas cosas: apuro, cansancio o enojo.','Si dudas, pregunta: “¿Todo bien?”.'],t:'digi',lv:[2,3,4],k:'choice',scene:'📩 “ok.” 🤔',story:'Le escribes a {B} y responde solo “ok.”, sin emojis. Te quedas dándole vueltas.',q:'¿Qué haces?',o:['Recuerdo que no veo su cara ni oigo su voz: puedo preguntar “¿todo bien?”','Pienso que seguro está enojado y no le hablo más','Le mando 20 mensajes seguidos'],ok:0,hint:'En un mensaje faltan la cara y la voz.',why:'En los mensajes faltan la cara y la voz, así que es fácil entender mal. Pregunta antes de suponer lo peor.'},
+{id:'d5',t:'digi',lv:[2,3,4],who:'alone',k:'choice',scene:'📸 😂 ➜ ❓',story:'Tienes una foto muy graciosa de un compañero y quieres subirla al grupo.',q:'¿Qué haces primero?',o:['Pregunto si está de acuerdo; si no quiere, no la subo','La subo rápido','La subo sin su nombre'],ok:0,hint:'La foto de otra persona necesita su permiso.',why:'Una foto de otra persona necesita su permiso. Lo que se sube en línea puede quedar para siempre y herir.'},
+{id:'d6',t:'digi',lv:[2,3,4],k:'choice',scene:'📰 ❗ 📲',story:'Te llega un video que dice “Mañana cierran todos los colegios”. Todos lo comparten.',q:'¿Qué haces antes de compartirlo?',o:['Reviso en una fuente confiable (el colegio, un diario o un sitio oficial)','Lo comparto ya','Lo creo porque lo comparten muchos'],ok:0,hint:'Que algo se comparta mucho no lo hace verdadero.',why:'Antes de compartir pregúntate: ¿quién lo dice? ¿hay otra fuente confiable? Que algo se comparta mucho no lo hace verdadero.'},
+{id:'d7',t:'digi',lv:[3,4],k:'choice',scene:'🤖 💬 📚',story:'Un chat de inteligencia artificial te da la respuesta de una tarea con mucha seguridad.',q:'¿Cómo la usas?',o:['La reviso en otra fuente y la explico con mis palabras','La copio tal cual','Pienso que es una persona que me entiende mejor que nadie'],ok:0,hint:'La seguridad con que habla no es prueba de que esté bien.',why:'La IA puede equivocarse aunque suene muy segura, y no es una persona. Sirve de apoyo, pero tú piensas, verificas y decides.'},
+{id:'d8',t:'digi',lv:[2,3,4],who:'alone',k:'choice',scene:'📱 😞 💬',story:'Descubres que hay un chat del curso donde no te incluyeron.',q:'¿Qué haces?',o:['Respiro, hablo con alguien de confianza y, si quiero, pregunto con calma a un compañero','Escribo insultos en el chat','Me aíslo y digo que no me importa'],ok:0,hint:'Primero calma el cuerpo, después decide.',why:'Sentirse dejado afuera duele. Hablar con alguien de confianza y preguntar con calma cuida tu ánimo y tus relaciones.'},
+{id:'d9',t:'digi',lv:[2,3,4],who:'alone',k:'choice',scene:'🎥 ⚠️',story:'Te retan a hacer algo peligroso para grabar un video.',q:'¿Qué haces?',o:['Digo que no, aunque me digan cobarde, y propongo otra idea','Lo hago para que no se rían','Lo hago pero sin que nadie lo sepa'],ok:0,hint:'Cuidar tu cuerpo es lo primero.',why:'Decir que no a algo peligroso es valentía. Las personas que te quieren no te piden arriesgarte.'},
+{id:'d10',t:'digi',lv:[2,3,4],who:'alone',k:'choice',scene:'🎮 ⏰ 💾',story:'Estás en lo mejor del juego y se acerca la hora de terminar.',q:'¿Qué plan te ayuda más?',o:['Pedir 5 minutos antes de que termine, guardar la partida y pasar a lo siguiente de mi lista','Seguir a escondidas','Enojarme y no hablar con nadie'],ok:0,hint:'Un plan hecho antes ayuda más que decidir enojado.',why:'Pedir tiempo antes y tener un plan para lo que sigue hace más fácil terminar. Es una forma de autonomía: tú organizas tu tiempo.'},
+/* ---- ampliación v12: nivel 1 (4 a 6 años) ---- */
+{id:'m13',t:'mind',lv:[0],k:'choice',scene:'{a} 📞✋',story:'{A} pone la mano en la oreja, como un teléfono, y dice “¿Aló? ¿Aló?”.',q:'¿Qué hace {A}?',o:['Juega a que habla por teléfono','Se hizo daño en la oreja'],ok:0,hint:'Mira si {A} está jugando o si le duele algo.',why:'{A} está jugando a que hace algo. Jugar “a que…” también es leer la mente: sabemos que es de mentira.'},
+{id:'m14',t:'mind',lv:[0],k:'choice',scene:'{b} 🚪 {a} 🍪🤫',story:'{B} salió de la sala. Mientras tanto, {A} escondió una galleta debajo de la mesa.',q:'¿{B} sabe dónde está la galleta?',o:['No, porque no vio','Sí, lo sabe'],ok:0,hint:'¿{B} estaba mirando?',why:'Quien no vio, no sabe. {B} puede buscar en otro lugar, y eso no es una mentira: solo no lo sabe.'},
+{id:'e11',t:'emo',lv:[0],k:'choice',scene:'{a} 🎁 😮',story:'{A} abre un regalo. Pone la boca en forma de O y abre mucho los ojos.',q:'¿Qué siente {A}?',o:['😮 Sorpresa','😠 Rabia','😢 Tristeza'],ok:0,hint:'Mira la boca y los ojos.',why:'La boca en O y los ojos muy abiertos muestran sorpresa. La sorpresa puede ser buena o no tan buena.'},
+{id:'e12',t:'emo',lv:[0],k:'choice',scene:'{b} 🧸💢 ✊',story:'Le quitaron el juguete a {B}. Aprieta los puños y baja las cejas.',q:'¿Qué siente {B}?',o:['😠 Rabia','😀 Alegría','😴 Sueño'],ok:0,hint:'Mira los puños y las cejas.',why:'Los puños apretados y las cejas hacia abajo muestran rabia. La rabia se puede calmar con respiración.'},
+{id:'e13',t:'emo',lv:[0],k:'choice',scene:'{a} 😠 ➜ 🌸 🕯️',story:'{A} siente mucha rabia y quiere pegar.',q:'¿Qué le ayuda?',o:['Oler la flor y soplar la vela 🌸🕯️','Pegar','Tirar cosas'],ok:0,hint:'Primero calmamos el cuerpo.',why:'Respirar lento calma el cuerpo. Después se puede decir con palabras qué pasó.'},
+{id:'c11',t:'conf',lv:[0],k:'choice',scene:'🛝 ⏳ {b}',story:'Quieres usar el columpio, pero {B} lo está usando.',q:'¿Qué haces?',o:['Pido turno y espero un poquito ⏳','Lo empujo para bajarlo','Me pongo a gritar'],ok:0,hint:'Esperar también es una forma de jugar juntos.',why:'Pedir turno y esperar permite que los dos usen el columpio. Contar hasta 10 ayuda a esperar.'},
+{id:'c12',t:'conf',lv:[0,1],k:'choice',scene:'{b} 😢 {a} 🤝',story:'Ves que {B} está llorando solo.',q:'¿Qué puedes hacer?',o:['Preguntarle: “¿Quieres ayuda?”','Reírme','Irme corriendo'],ok:0,hint:'Una pregunta amable ayuda.',why:'Preguntar “¿quieres ayuda?” muestra que te importa. Si no quiere, puedes quedarte cerca o avisar a un adulto.'},
+{id:'t10',t:'talk',lv:[0],k:'choice',scene:'👦 “¡Hola!” 👋',story:'Un niño te dice “hola”.',q:'¿Qué puedes hacer?',o:['Decir “hola”','Saludar con la mano','Mirar hacia otro lado sin responder'],ok:[0,1],hint:'Hablar o hacer un gesto son dos formas de saludar.',why:'Se puede saludar con palabras o con la mano. Todas las formas de comunicarse valen.'},
+{id:'t11',t:'talk',lv:[0,1],who:'alone',k:'choice',scene:'😣 🤰',story:'Te duele la guata en el colegio.',q:'¿Qué haces?',o:['Aviso a un adulto: “Me duele la guata”','Me aguanto y no digo nada'],ok:0,hint:'Los adultos pueden ayudar si saben.',why:'Avisar cuando algo te duele o te molesta es una forma de cuidarte. Los adultos pueden ayudar si lo saben.'},
+{id:'d11',t:'digi',lv:[0,1],who:'alone',k:'choice',scene:'📱 ✋ 🕐',story:'Quieres ver un video, pero tu adulto dice que hoy no.',q:'¿Qué haces?',o:['Respiro y pregunto cuándo sí puedo','Grito y lloro','Tomo el celular igual'],ok:0,hint:'Primero calma el cuerpo y después pregunta.',why:'Cuando nos dicen que no, el cuerpo se enoja. Respirar y preguntar “¿cuándo sí?” ayuda a ponernos de acuerdo.'},
+{id:'f7',t:'team',lv:[0,1],who:'together',k:'together',scene:'📦 🧸 🧴 🎧',story:'Una caja de calma es un lugar para guardar cosas que ayudan cuando hay mucha emoción.',q:'Armamos nuestra caja de calma',tasks:['Elijan una caja o bolsa y decórenla juntos.','Pongan 3 cosas que calmen: algo suave, algo para apretar y algo para mirar u oler.','Elijan dónde se guarda para que siempre esté a la mano.','Practiquen: sientan una emoción grande y usen la caja juntos.'],adult:'Que el niño o la niña elija las cosas. Ofrezca la caja sin obligar y úsela también usted cuando esté estresado: así aprende que calmarse es normal.'},
+{id:'k6',t:'calm',lv:[0,1,2,3,4],k:'steps',scene:'🦋 🤗',story:'El abrazo de mariposa ayuda a calmar el cuerpo y la mente.',q:'Abrazo de mariposa',steps:['Cruza los brazos sobre el pecho, como alas de mariposa.','Golpea suave con tus manos, un lado y luego el otro, despacio.','Respira lento mientras golpeas despacito. Hazlo 10 veces.','Suelta los brazos. ¿Cómo está tu cuerpo ahora?']},
+/* ---- ampliación v12: niveles 2 y 3 (7 a 12 años) ---- */
+{id:'m15',clues:['Lo que dice: “no quiero jugar”.','Lo que hace: mira el juego y se queda cerca.','Cuando lo que dice y lo que hace no coinciden, puede sentir otra cosa.'],t:'mind',lv:[1,2],k:'choice',scene:'{a} 🙅 👀 {b} 🎲',story:'{A} dice “no quiero jugar”, pero mira de reojo el juego de {B} y se queda cerca.',q:'¿Qué puede estar pasando?',o:['Quizás sí quiere jugar, pero le da vergüenza pedirlo','{A} odia a {B}','No le importa nada'],ok:0,hint:'Mira lo que hace, no solo lo que dice.',why:'A veces lo que decimos no coincide con lo que queremos. Mirar lo que hace una persona da pistas. Puedes invitarla otra vez sin presionar.'},
+{id:'e13b',t:'emo',lv:[1,2],who:'alone',k:'choice',scene:'📖 😳 😆',story:'Te equivocaste leyendo en voz alta y algunos compañeros se rieron.',q:'¿Qué te ayuda más?',o:['Respirar, decir “me equivoqué, lo intento de nuevo” y seguir','Salir corriendo y no volver a leer','Burlarme de otro para que dejen de reírse de mí'],ok:0,hint:'Equivocarse es parte de aprender.',why:'Todos nos equivocamos. Reconocerlo con calma y volver a intentar es de personas valientes. Si la burla sigue, puedes avisar a un adulto.'},
+{id:'e14',t:'emo',lv:[1,2],k:'choice',scene:'{a} 💚 {b} 👀',story:'Ves que {B} juega con otro niño y sientes celos.',q:'¿Qué puedes hacer con esa emoción?',o:['Decir: “Me sentí dejado de lado, ¿podemos jugar los tres?”','Hacer que se peleen','No hablarle más a {B}'],ok:0,hint:'Los celos avisan que quieres cercanía.',why:'Los celos son normales y dicen que quieres estar cerca de alguien. Decirlo con palabras amables ayuda más que enojarse.'},
+{id:'c13',t:'conf',lv:[1,2],k:'choice',scene:'{a} ⚡ {b} 🤝 ❓',story:'Dos amigos pelean y cada uno te pide que estés de su lado.',q:'¿Qué haces?',o:['Escucho a los dos y les sugiero que hablen con calma','Me pongo del lado del más fuerte','Les cuento a todos la pelea'],ok:0,hint:'No tienes que elegir un bando.',why:'Puedes ayudar sin tomar partido: escuchar a los dos y sugerir que hablen. Si la pelea es violenta, avisa a un adulto.'},
+{id:'c14',t:'conf',lv:[1,2],who:'alone',k:'choice',scene:'🎲 😠 🤥',story:'Estás jugando y sientes que alguien hizo trampa.',q:'¿Qué dices?',o:['“Creo que esa regla no era así. ¿La revisamos?”','“¡Tramposo!” y me voy','No digo nada y me enojo por dentro'],ok:0,hint:'Habla de la regla, no de la persona.',why:'Hablar de la regla y no de la persona evita pelear. Revisar las reglas juntos ayuda a seguir jugando.'},
+{id:'t12',t:'talk',lv:[1,2],k:'say',scene:'💬 ❓',story:'Hacer preguntas mantiene viva la conversación. Elige una frase, dila (o muéstrala) y marca cuando lo hiciste.',q:'Preguntar para seguir',phrases:['¿Y tú qué opinas?','¿Cómo fue eso para ti?','¿Y qué haces cuando eso te pasa?']},
+{id:'t13',t:'talk',lv:[1,2,3,4],k:'choice',scene:'👥💬 ➜ 🙋',story:'Un grupo de compañeros está conversando y quieres entrar a la conversación.',q:'¿Qué haces?',o:['Escucho un momento y digo algo sobre el tema','Interrumpo con otro tema','Me quedo muy lejos para siempre'],ok:0,hint:'Primero escucha de qué hablan.',why:'Escuchar un momento y decir algo relacionado es una buena forma de entrar. Si no pueden en ese momento, puedes intentarlo otro día.'},
+{id:'d14',t:'digi',lv:[1,2],who:'alone',k:'choice',scene:'🎮 🎁 📝',story:'Un juego gratis te pide tu nombre completo, tu edad real y tu dirección.',q:'¿Qué haces?',o:['Le pregunto a un adulto antes de seguir','Lo lleno rápido para jugar','Invento todo y sigo'],ok:0,hint:'Los datos personales valen mucho.',why:'Nombre completo, dirección o colegio no se entregan sin preguntar a un adulto. Algunos juegos gratis usan esos datos para otra cosa.'},
+{id:'f8',t:'team',lv:[1,2],who:'together',k:'together',scene:'📚 ⏰ 🤝',story:'Un acuerdo para la tarea reduce las discusiones del día.',q:'Acuerdo de la tarea',tasks:['Elijan juntos a qué hora y dónde se hace la tarea.','Decidan qué se hace primero y cuándo hay descanso.','Acuerden qué hacer si se traba: pedir ayuda, hacer una pausa o seguir mañana.','Escríbanlo o dibújenlo y péguenlo.'],adult:'Ofrezca elegir entre dos opciones razonables: eso da control sin perder estructura. Revise el acuerdo después de una semana y ajústenlo.'},
+/* ---- ampliación v12: nivel 4 (13 a 14 años) ---- */
+{id:'m16',t:'mind',lv:[3,4],k:'choice',scene:'🧑 “Estoy bien” 😶 📅',story:'Un amigo dice “estoy bien”, pero hace dos semanas que no habla con nadie y se aleja del grupo.',q:'¿Qué puedes hacer?',o:['Preguntarle en privado cómo está y escuchar sin juzgar','Contárselo a todo el curso','Esperar que se le pase solo'],ok:0,hint:'Lo que dice no siempre coincide con cómo está.',why:'Cuando una persona cambia mucho y se aísla, puede estar mal aunque diga que no. Pregunta con calma. Si te preocupa mucho, cuéntale a un adulto de confianza: no es traición.'},
+{id:'m17',clues:['Lo que escribe: “genial, gracias por avisar”.','Lo que pasó: olvidaste avisar algo importante.','El emoji 🙃 se usa muchas veces para decir lo contrario.','Si lo que dice no coincide con lo que pasó, puede ser ironía.'],t:'mind',lv:[3,4],k:'choice',scene:'📱 “genial, gracias por avisar 🙃” 🕚',story:'Olvidaste avisar algo importante y a las 11 de la noche te escriben: “genial, gracias por avisar 🙃”.',q:'¿Qué significa?',o:['Está molesto y lo dice al revés (ironía)','Está feliz y te agradece','Quiere que sigas olvidando'],ok:0,hint:'Mira la hora, la situación y el emoji.',why:'El emoji 🙃 y el contexto muestran ironía: dice “gracias” pero siente molestia. Responder con calma y asumir tu parte ayuda: “Tienes razón, me olvidé. Perdón”.'},
+{id:'e15',t:'emo',lv:[3,4],k:'choice',scene:'📱 😀😀😀 ➜ 😔',story:'Ves en redes que todos parecen felices, viajando y de fiesta, y tú no te sientes así.',q:'¿Qué pensamiento te ayuda más?',o:['En redes se muestra lo mejor; no veo todo lo que viven','Algo está mal conmigo','Debería mentir y subir fotos falsas'],ok:0,hint:'Compara tu vida real con lo que otros muestran.',why:'Las redes muestran momentos elegidos. Compararte con eso suele hacerte sentir peor. Hablar con alguien de confianza y reducir el tiempo en redes ayuda.'},
+{id:'e16',t:'emo',lv:[2,3,4],who:'alone',k:'choice',scene:'📝 5,8 😤',story:'Sacaste un 5,8 en una prueba y esperabas un 7,0.',q:'¿Qué haces primero?',o:['Reviso qué errores tuve y qué puedo practicar','Me digo que soy un fracaso','Rompo la prueba'],ok:0,hint:'Un error es información, no una sentencia.',why:'Una nota dice cómo te fue en una prueba, no cuánto vales. Revisar los errores y pedir ayuda convierte la rabia en un plan.'},
+{id:'c15',t:'conf',lv:[3,4],who:'alone',k:'choice',scene:'📝 👀 🧑‍🤝‍🧑',story:'Tu mejor amigo te pide que le dejes copiar durante una prueba.',q:'¿Qué haces?',o:['Digo que no, pero le ofrezco estudiar juntos','Lo dejo para no perder la amistad','Lo acuso con todo el curso'],ok:0,hint:'Puedes cuidar la amistad y decir que no.',why:'Decir que no a algo que te perjudica no destruye una amistad. Ofrecer otra ayuda muestra que te importa.'},
+{id:'c16',t:'conf',lv:[3,4],k:'choice',scene:'🏠 🕙 💬',story:'Tus papás y tú no están de acuerdo sobre la hora de volver a casa.',q:'¿Cuál es una buena forma de negociar?',o:['Proponer una hora con razones, escuchar las suyas y probar una semana','Volver más tarde sin avisar','Gritar que nunca te entienden'],ok:0,hint:'Mostrar responsabilidad ayuda a que confíen.',why:'Negociar es escuchar, proponer y probar. Cumplir lo acordado construye confianza para pedir más libertad después.'},
+{id:'t14',t:'talk',lv:[3,4],k:'say',scene:'💬 🙂',story:'Dar una opinión distinta sin pelear se practica. Elige una frase, dila (o muéstrala) y marca cuando lo hiciste.',q:'Opinar distinto',phrases:['Entiendo tu idea. Yo lo veo distinto porque…','Puede que tengas razón en eso. Y yo pienso que…','Podemos estar en desacuerdo y seguir siendo amigos.']},
+{id:'d12',t:'digi',lv:[3,4],who:'alone',k:'choice',scene:'📲 💸 ❓',story:'Un perfil que no conoces te ofrece un trabajo fácil desde el celular que paga mucho dinero.',q:'¿Qué haces?',o:['Desconfío, no doy datos ni dinero y consulto con un adulto','Le doy mis datos para empezar rápido','Invito a mis amigos sin averiguar'],ok:0,hint:'Si es demasiado bueno para ser verdad, probablemente lo es.',why:'Las ofertas muy fáciles y con mucho dinero suelen ser estafas. Nunca entregues datos bancarios ni claves y consúltalo con un adulto antes.'},
+{id:'d13',t:'digi',lv:[3,4],who:'alone',k:'choice',scene:'📱 🕕 😴',story:'Llevas seis horas seguidas en el celular y te sientes cansado e irritable.',q:'¿Qué plan te ayuda más?',o:['Poner pausas con alarma y dejar el celular fuera de la cama una hora antes de dormir','Seguir hasta que me canse','Esconder el celular de mis papás'],ok:0,hint:'Tú puedes organizar tu tiempo.',why:'Las pausas y dormir sin pantallas ayudan al cuerpo y al ánimo. Decidir tus propios límites es una forma de autonomía.'},
+{id:'d15',t:'digi',lv:[3,4],who:'alone',k:'choice',scene:'📸 🚫 📩',story:'Te llega una foto íntima de otra persona de tu edad, enviada sin su permiso.',q:'¿Qué haces?',o:['No la reenvío, la borro y aviso a un adulto de confianza','La reenvío al grupo','La guardo para después'],ok:0,hint:'Compartir esa imagen puede hacer mucho daño y tener consecuencias legales.',why:'Reenviar una imagen íntima sin permiso daña a la persona y puede ser delito. No la compartas, bórrala y avisa a un adulto: así proteges a la otra persona y a ti.'},
+{id:'f9',t:'team',lv:[3,4],who:'together',k:'together',scene:'📅 📚 🤝',story:'Un plan de estudio acordado da autonomía y reduce las peleas.',q:'Plan de estudio acordado',tasks:['El adolescente propone cómo organizará la semana de estudio.','El adulto pregunta qué apoyo necesita, sin corregir.','Acuerdan una revisión de 10 minutos al final de la semana.','Definen qué pasa si el plan no funciona: se ajusta, no se castiga.'],adult:'Evite tomar el control del plan. Pregunte: “¿Qué necesitas de mí?”. La confianza crece cuando la persona cumple lo que propuso.'},
+{id:'m18',t:'mind',lv:[2,3,4],k:'steps',scene:'🕵️ 😒 🌧️',story:'La ironía se aprende con un método de pistas. Sigue los pasos con calma.',q:'Método para reconocer la ironía',steps:['Paso 1. Escucha lo que dice la persona.','Paso 2. Mira su cara y escucha cómo lo dice (el tono de voz).','Paso 3. Mira lo que pasó antes.','Paso 4. Pregúntate: ¿las palabras coinciden con la cara y con lo que pasó?','Paso 5. Si NO coinciden, puede ser ironía: dice lo contrario de lo que siente.','Paso 6. Si dudas, pregunta con calma: “¿Lo dices en serio?”.']},
+{id:'m19',t:'mind',lv:[1,2],k:'steps',scene:'☁️ 🙋',story:'A veces usamos frases que no significan lo que dicen. Por ejemplo, “estoy en las nubes” quiere decir “estoy distraído”.',q:'Frases con otro significado',steps:['Paso 1. Si una frase suena rara o imposible, puede ser una expresión.','Paso 2. Piensa en la situación: ¿qué podría querer decir?','Paso 3. Si no sabes, pregunta: “¿Qué quieres decir con eso?”.','Preguntar es una buena idea. No es de tontos.']},
+/* ---- Vida adulta (nivel 5: 15 a 18 años) ---- */
+/* Autonomía y decisiones */
+{id:'v1',t:'vida',lv:[4],who:'alone',k:'choice',scene:'🎓 ❓ 🧭',story:'Tus papás te preguntan qué quieres hacer al salir del colegio. Todavía no lo sabes.',q:'¿Qué haces?',o:['Digo que aún no lo sé y propongo pasos: explorar opciones, probar cosas y hablar con un orientador','Elijo lo primero que se me ocurre para que dejen de preguntar','Digo que no me importa'],ok:0,hint:'No saber todavía es normal. Lo importante es buscar información.',why:'Es normal no tener claro el futuro a esta edad. Explorar, probar y pedir orientación te da información para decidir. Puedes ir paso a paso.'},
+{id:'v2',t:'vida',lv:[4],who:'alone',k:'choice',scene:'🚌 🗺️ 📱',story:'Quieres empezar a ir solo a un lugar nuevo en transporte público.',q:'¿Cuál es un buen plan?',o:['Practicar el trayecto acompañado primero, llevar el celular cargado y avisar cuando llegue','Ir sin avisar a nadie para demostrar que puedo','No ir nunca por miedo a perderme'],ok:0,hint:'La autonomía se construye de a poco.',why:'La autonomía se practica por etapas: primero con apoyo, después con menos. Avisar y llevar el celular cargado cuida tu seguridad y hace que confíen más en ti.'},
+{id:'v3',t:'vida',lv:[4],k:'order',scene:'🧭 ⚖️',story:'Para decisiones importantes sirve tener pasos. Toca los pasos en orden.',q:'Cómo tomar una decisión importante',steps:['Defino qué tengo que decidir','Reúno información','Pienso ventajas y desventajas','Pido la opinión de alguien de confianza','Decido y pruebo','Reviso cómo me fue'],why:'Decidir con pasos baja la ansiedad. Pedir opinión ayuda, pero la decisión es tuya. Revisar después te enseña para la próxima vez.'},
+{id:'v4',t:'vida',lv:[4],k:'choice',open:true,scene:'🧭 🙋',story:'La autonomía no es todo o nada: se puede crecer en cada área. Elige las áreas en las que quieres más autonomía. Puedes elegir varias.',q:'¿Dónde quieres más autonomía?',o:['Mi dinero','Mis estudios o mi trabajo','Mi salud','Mis amistades y relaciones','Moverme por la ciudad','Mi casa y mis comidas'],why:'Gracias por contarlo. Esta información es valiosa para tu plan de vida. Puedes conversarla con tu familia y con tu equipo de apoyo.'},
+{id:'v5',t:'vida',lv:[4],who:'together',k:'together',scene:'🌟 📝 🤝',story:'Un plan de vida parte de lo que la persona quiere, sus fortalezas y los apoyos que necesita.',q:'Mi plan de vida',tasks:['La persona dice 3 de sus fortalezas y el adulto agrega 2 que ha visto.','La persona cuenta 3 cosas que quiere lograr en el próximo año.','Eligen un primer paso pequeño y definen quién ayuda y cómo.','Acuerdan revisarlo en un mes.'],adult:'Pregunte siempre “¿qué quieres tú?” antes de proponer. Apoye a decidir en vez de decidir por la persona, y acompañe sin hablar en su lugar.'},
+/* Dinero */
+{id:'v6',t:'vida',lv:[4],who:'alone',k:'choice',scene:'💵 🧾 🐷',story:'Recibes $50.000 por un trabajo de verano y tienes gastos: transporte, colación y algo que quieres comprar.',q:'¿Cómo lo organizas?',o:['Separo primero lo necesario, luego lo que quiero y guardo una parte','Lo gasto todo en lo que quiero hoy','Se lo presto a quien me lo pida'],ok:0,hint:'Primero lo necesario.',why:'Un presupuesto simple separa lo necesario, lo que quieres y lo que guardas. Así el dinero alcanza y puedes cumplir metas.'},
+{id:'v7',t:'vida',lv:[4],k:'order',scene:'🛒 💰',story:'Para comprar algo caro hay pasos. Toca los pasos en orden.',q:'Comprar algo que cuesta caro',steps:['Decido qué quiero y por qué','Averiguo precios en varios lugares','Calculo cuánto debo ahorrar y en cuánto tiempo','Ahorro un poco cada semana','Compro y reviso que esté bien'],why:'Ahorrar con un plan hace más fácil esperar. Comparar precios te ayuda a no pagar de más.'},
+{id:'v8',t:'vida',lv:[4],who:'alone',k:'choice',scene:'🤝 💸 ❓',story:'Un amigo te pide dinero prestado, y las últimas veces no te devolvió.',q:'¿Qué haces?',o:['Digo con calma que no puedo prestar hasta que me devuelva lo anterior','Le presto de nuevo para no pelear','Dejo de hablarle sin decir por qué'],ok:0,hint:'Puedes cuidar el dinero y la amistad.',why:'Poner límites con el dinero cuida tu bolsillo y la amistad. Decirlo con calma y claro evita malos entendidos.'},
+{id:'v9',t:'vida',lv:[4],who:'alone',k:'choice',scene:'📩 🏆 🔗 ⚠️',story:'Te llega un mensaje: “¡Ganaste un premio! Entra al link e ingresa tu clave bancaria”.',q:'¿Qué haces?',o:['No entro al link, no doy claves y aviso a un adulto o a mi banco','Entro rápido para no perder el premio','Reenvío el mensaje a mis amigos'],ok:0,hint:'Nadie serio pide tu clave por mensaje.',why:'Ningún banco ni empresa seria pide tus claves por mensaje. Es una estafa. No entres al link, no compartas claves y avisa a un adulto o a tu banco.'},
+{id:'v10',t:'vida',lv:[4],who:'alone',k:'choice',scene:'🏷️ 💳 ⏳',story:'Ves una oferta de “compra ahora, paga después” de algo que no necesitas.',q:'¿Qué haces?',o:['Espero un día, reviso si lo necesito y cuánto pagaré en total','Lo compro porque la oferta termina hoy','Lo compro y pienso después cómo pagarlo'],ok:0,hint:'La urgencia es una forma de presionar.',why:'La urgencia (“solo hoy”) suele servir para que compres sin pensar. Esperar un día y revisar el costo total evita deudas.'},
+{id:'v11',t:'vida',lv:[4],k:'choice',scene:'💳 🔐 🤫',story:'Tienes una tarjeta o cuenta con clave.',q:'¿Quién puede saber tu clave?',o:['Solo yo; y si necesito ayuda, un adulto de mucha confianza','Mi amigo, si me cae bien','Quien me la pida por chat'],ok:0,hint:'Una clave es como la llave de tu casa.',why:'La clave es personal. Solo se comparte con alguien de mucha confianza cuando necesitas ayuda, y se cambia después. Nunca se da por chat ni a desconocidos.'},
+/* Trámites y vida cotidiana */
+{id:'v12',t:'vida',lv:[4],k:'order',scene:'🏥 🪪 📅',story:'Pedir y usar una hora de salud tiene pasos. Toca los pasos en orden.',q:'Pedir una hora de salud',steps:['Averiguo cómo pedir hora (presencial, teléfono o aplicación)','Anoto la fecha y la hora','Explico con claridad qué me pasa','Llevo mi cédula','Llego a tiempo y llevo mis preguntas'],why:'Prepararse hace que la visita sirva más. Anotar tus preguntas antes ayuda a no olvidarlas cuando estás nervioso.'},
+{id:'v13',t:'vida',lv:[4],who:'alone',k:'choice',scene:'📄 ❓ 🏢',story:'Tienes que hacer un trámite y no entiendes un papel que te piden.',q:'¿Qué haces?',o:['Pido que me lo expliquen paso a paso y lo anoto','Firmo sin entender para terminar rápido','Me voy sin hacer el trámite'],ok:0,hint:'Pedir una explicación es válido.',why:'Tienes derecho a entender lo que firmas. Pedir que te expliquen paso a paso y anotarlo es una forma segura de hacer trámites.'},
+{id:'v14',t:'vida',lv:[4],k:'steps',scene:'🚪 🔑 📱',story:'Una lista fija antes de salir ayuda a no olvidar nada.',q:'Lista para salir de casa',steps:['Llaves.','Celular cargado.','Cédula.','Dinero o tarjeta.','Agua y comida si hace falta.','Aviso a alguien a dónde voy y a qué hora vuelvo.']},
+{id:'v15',t:'vida',lv:[4],who:'alone',k:'choice',scene:'🗺️ 😰 🏙️',story:'Te pierdes volviendo a casa en un lugar que no conoces.',q:'¿Qué haces primero?',o:['Me detengo en un lugar seguro, respiro y reviso el mapa o llamo a alguien de confianza','Camino rápido sin rumbo','Le pido ayuda a la primera persona que me ofrece llevarme'],ok:0,hint:'Primero calma el cuerpo, luego busca el camino.',why:'Detenerte y respirar te ayuda a pensar. Usa el mapa o llama a alguien de confianza. No te vayas con desconocidos.'},
+{id:'v16',t:'vida',lv:[4],k:'choice',scene:'🍳 🔥 ⚠️',story:'Estás cocinando y se prende fuego el aceite de la sartén.',q:'¿Qué haces?',o:['Apago el fuego y tapo la sartén con una tapa; si crece, salgo y llamo al 132','Le echo agua para apagarlo','Dejo la cocina y me voy a mi pieza'],ok:0,hint:'El agua no apaga el fuego del aceite.',why:'El aceite en llamas se apaga cortando el calor y tapando, nunca con agua. Si el fuego crece, sal de la casa y llama a Bomberos al 132.'},
+{id:'v17',t:'vida',lv:[4],k:'choice',scene:'😵 🚑 📞',story:'Una persona se desmaya delante de ti y no responde.',q:'¿Qué haces?',o:['Llamo al 131, me quedo con ella y sigo las indicaciones','Le echo agua y espero que despierte','Me voy para no meterme en problemas'],ok:0,hint:'Pedir ayuda rápido es lo más importante.',why:'Llamar al 131 y quedarte con la persona salva vidas. La persona que atiende te dirá qué hacer paso a paso.'},
+/* Estudios y trabajo */
+{id:'v18',t:'vida',lv:[4],who:'alone',k:'choice',scene:'💼 🗣️ ❓',story:'En una entrevista de trabajo te hacen una pregunta que no sabes responder.',q:'¿Qué dices?',o:['“No lo sé todavía, pero puedo aprenderlo”','Invento una respuesta','Me quedo en silencio y me pongo a llorar'],ok:0,hint:'La honestidad con ganas de aprender suma.',why:'Ser honesto y mostrar disposición a aprender suele caer mejor que inventar. Respirar un momento antes de responder también ayuda.'},
+{id:'v19',t:'vida',lv:[4],k:'order',scene:'📄 💼 🤝',story:'Postular a un trabajo tiene pasos. Toca los pasos en orden.',q:'Postular a un trabajo',steps:['Hago o actualizo mi currículum','Busco ofertas que me interesan','Envío mi currículum con un mensaje breve y amable','Preparo la entrevista','Llego puntual, saludo y escucho','Agradezco y hago seguimiento'],why:'Postular es una habilidad que se aprende. Prepararte y practicar la entrevista baja los nervios.'},
+{id:'v20',t:'vida',lv:[4],who:'alone',k:'choice',scene:'👔 😳 🗣️',story:'Tu jefe te corrige un error delante de otras personas y sientes vergüenza y rabia.',q:'¿Qué haces?',o:['Respiro, agradezco la información y, si necesito, pido hablar después a solas','Respondo gritando','Renuncio ahí mismo'],ok:0,hint:'Primero calma el cuerpo, después responde.',why:'Una corrección es información, no un ataque a tu valor. Respirar y pedir hablar a solas ayuda a entender y a cuidar la relación.'},
+{id:'v21',t:'vida',lv:[4],k:'choice',scene:'📝 ❓ 💼',story:'Te ofrecen un trabajo y dicen “después vemos lo del contrato”.',q:'¿Qué haces?',o:['Pido que el contrato esté por escrito antes de empezar y lo consulto con un adulto','Empiezo igual para no perder la oportunidad','Acepto cualquier condición'],ok:0,hint:'Lo importante debe estar por escrito.',why:'Un contrato por escrito protege tus derechos: horario, sueldo y funciones. Consúltalo con un adulto de confianza antes de firmar.'},
+{id:'v22',t:'vida',lv:[4],k:'choice',open:true,scene:'🧰 🧠',story:'Cada persona rinde mejor con ciertos apoyos. Elige los que te ayudan. Puedes elegir varios.',q:'¿Qué apoyos te ayudan a estudiar o trabajar?',o:['Instrucciones por escrito','Pausas programadas','Un ambiente con poco ruido','Rutinas claras y avisos antes de los cambios','Un compañero o guía que me explique'],why:'Conocer lo que te ayuda sirve para pedir ajustes en el estudio o el trabajo. Es una forma de autodeterminación.'},
+{id:'v23',t:'vida',lv:[4],who:'together',k:'together',scene:'🗣️ 🧰 🤝',story:'Pedir apoyos se practica antes de necesitarlos.',q:'Hablar de mis apoyos',tasks:['La persona elige 3 apoyos que le ayudan.','Ensayan cómo pedirlos con la frase: “Me ayuda cuando…”.','Averiguan a quién se pide en el lugar de estudio o trabajo (jefe, orientador, encargado).','Averiguan qué programas de inclusión laboral existen en su comuna.'],adult:'Acompañe sin hablar por la persona: deje que ensaye y mejore su propio mensaje. Verifique con fuentes oficiales qué apoyos y programas están vigentes.'},
+{id:'v24',t:'vida',lv:[4],k:'say',scene:'🗣️ 📝',story:'Pedir un ajuste con calma se practica. Elige una frase, dila (o muéstrala) y marca cuando lo hiciste.',q:'Pedir un ajuste',phrases:['Me concentro mejor con instrucciones escritas. ¿Podrían dármelas así?','Necesito una pausa corta cada cierto tiempo para rendir mejor.','Puedo hacer esta tarea si primero me explican los pasos.']},
+{id:'v25',t:'vida',lv:[4],who:'alone',k:'choice',scene:'⏰ 😴 💼',story:'Llegaste tarde dos veces a tu práctica o trabajo porque te cuesta madrugar.',q:'¿Qué haces?',o:['Aviso, pido disculpas y armo un plan: alarma, ropa lista y acostarme antes','Dejo de ir sin avisar','Invento excusas distintas cada vez'],ok:0,hint:'Un plan concreto vale más que una promesa.',why:'Reconocer el problema y armar un plan concreto muestra responsabilidad. Los cambios pequeños en la noche ayudan a la mañana.'},
+/* Salud y bienestar */
+{id:'v26',t:'vida',lv:[4],who:'alone',k:'choice',scene:'🌧️ 😞 🗣️',story:'Llevas varias semanas muy triste y sin ganas de nada.',q:'¿Qué haces?',o:['Se lo cuento a un adulto o a un profesional de salud y pido ayuda','Espero a ver si se me pasa solo','Lo oculto para no preocupar a nadie'],ok:0,hint:'Pedir ayuda a tiempo es de personas valientes.',why:'Estar mal por semanas merece ayuda. No tienes que esperar a estar peor. Si alguna vez piensas en hacerte daño, avisa de inmediato a una persona de confianza o llama al *4141.'},
+{id:'v27',t:'vida',lv:[4],k:'choice',scene:'🫂 💬 ⚠️',story:'Un amigo te cuenta que a veces piensa en hacerse daño y te pide que no se lo digas a nadie.',q:'¿Qué haces?',o:['Lo tomo en serio, no guardo el secreto y aviso a un adulto o profesional; sigo acompañándolo','Prometo no decir nada','Le digo que exagera'],ok:0,hint:'Un secreto así no se guarda solo.',why:'La vida de tu amigo es más importante que el secreto. Avisar a un adulto o profesional es cuidarlo, no traicionarlo. Sigue a su lado. La línea *4141 también ayuda.'},
+{id:'v28',t:'vida',lv:[4],who:'alone',k:'choice',scene:'🎉 🍺 ✋',story:'En una fiesta te ofrecen alcohol u otras drogas y te presionan.',q:'¿Qué haces?',o:['Digo que no sin dar muchas explicaciones y, si insisten, me voy o llamo a un adulto','Acepto para no quedar mal','Acepto y no se lo cuento a nadie'],ok:0,hint:'No necesitas justificar tu no.',why:'Decir que no es suficiente. Si te presionan, puedes irte o llamar a un adulto. Cuidarte es más importante que caer bien.'},
+{id:'v29',t:'vida',lv:[4],who:'alone',k:'choice',scene:'💊 😀 ❓',story:'Tomas un medicamento todos los días y te sientes mucho mejor.',q:'¿Qué haces?',o:['Sigo tomándolo y hablo con mi médico antes de cambiar algo','Lo dejo porque ya me siento bien','Tomo menos por mi cuenta'],ok:0,hint:'Sentirse bien puede ser el efecto del medicamento.',why:'Sentirte mejor muchas veces es el efecto del medicamento. Cambiar o dejarlo se decide con tu médico, no solo.'},
+{id:'v30',t:'vida',lv:[4],k:'steps',scene:'🧘 📝 💬',story:'Cuando estás muy estresado, un plan corto ayuda a no desbordarte.',q:'Plan para cuando estoy muy estresado',steps:['Paro lo que hago y respiro lento 5 veces.','Nombro lo que siento: nervios, rabia, tristeza, cansancio…','Escribo qué pasa y qué es lo más urgente.','Elijo una sola cosa pequeña para hacer ahora.','Se lo cuento a una persona de confianza.']},
+/* Relaciones y consentimiento */
+{id:'v31',t:'vida',lv:[4],who:'alone',k:'choice',scene:'💘 🗣️ 🙂',story:'Alguien te gusta mucho.',q:'¿Cómo lo expresas?',o:['Paso tiempo con esa persona, la conozco y le digo con respeto lo que siento, aceptando cualquier respuesta','Le insisto todos los días hasta que diga que sí','La sigo y reviso sus redes sin que lo sepa'],ok:0,hint:'Querer a alguien no da derecho a presionarla.',why:'Conocerse y decirlo con respeto es la forma sana. Insistir o vigilar a alguien no es cariño y le quita su libertad de elegir.'},
+{id:'v32',t:'vida',lv:[4],k:'choice',scene:'💔 🙂',story:'Le dices a alguien que te gusta y responde que no quiere salir contigo.',q:'¿Qué haces?',o:['Digo “gracias por decírmelo”, respiro y me doy tiempo para sentirme triste','Insisto para que cambie de opinión','Hablo mal de esa persona con otros'],ok:0,hint:'Un no también hay que respetarlo.',why:'Sentir tristeza es normal. Respetar el no cuida a la otra persona y a ti. Hablar con alguien de confianza ayuda.'},
+{id:'v33',t:'vida',lv:[4],who:'alone',k:'choice',scene:'🤝 ✋ ❤️',story:'Una persona con la que sales te pide algo físico que tú no quieres hacer.',q:'¿Qué haces?',o:['Digo que no, sin sentir culpa. Puedo cambiar de opinión en cualquier momento','Digo que sí para que no se enoje','Me quedo callado esperando que lo note'],ok:0,hint:'Tu cuerpo es tuyo y decides tú.',why:'Tu cuerpo es tuyo. Puedes decir que no, y cambiar de opinión aunque antes hayas dicho que sí. Una persona que te quiere lo respeta.'},
+{id:'v34',t:'vida',lv:[4],k:'choice',scene:'🤔 ❓ 🛑',story:'Le propones algo físico a una persona y ella duda o dice “no sé”.',q:'¿Qué haces?',o:['Paro y pregunto con calma. Sin un sí claro y libre, es no','Sigo porque no dijo que no','Insisto un poco más'],ok:0,hint:'El consentimiento es un sí claro, libre y que se puede retirar.',why:'El consentimiento es un sí claro y libre, sin presión ni alcohol de por medio, y se puede retirar en cualquier momento. Si hay duda, se para y se pregunta.'},
+{id:'v35',t:'vida',lv:[4],who:'alone',k:'choice',scene:'📸 🚫 😟',story:'Una persona te presiona para que le envíes una foto íntima.',q:'¿Qué haces?',o:['No la envío, bloqueo y aviso a un adulto de confianza','La envío porque confío en ella','La envío sin mostrar la cara'],ok:0,hint:'Lo que se envía puede quedar para siempre.',why:'Una foto íntima puede difundirse sin tu permiso. No tienes que enviarla aunque te presionen. Bloquear y contárselo a un adulto es lo más seguro.'},
+{id:'v36',t:'vida',lv:[4],k:'choice',scene:'📱 🚩 😔',story:'En una relación, la otra persona te revisa el celular, te aleja de tus amigos y te hace sentir mal contigo.',q:'¿Qué es esto?',o:['Una señal de alerta: conviene hablar con alguien de confianza y pedir ayuda','Una prueba de amor','Algo normal en todas las parejas'],ok:0,hint:'Querer no es controlar.',why:'Controlar, aislar y hacer sentir mal son señales de alerta. Una relación sana te da libertad y apoyo. Habla con alguien de confianza o con un profesional.'},
+/* Derechos y apoyos */
+{id:'v37',t:'vida',lv:[4],k:'choice',scene:'🏛️ ❓ 📋',story:'Tienes dudas sobre qué apoyos o beneficios existen para ti en tu comuna.',q:'¿Qué haces?',o:['Pregunto en el centro de salud, el municipio o con un orientador, y anoto lo que me digan','Me quedo con lo que dijo un conocido','No pregunto porque seguro no hay nada'],ok:0,hint:'La información oficial se pregunta en la fuente.',why:'Preguntar en el centro de salud, el municipio u orientación te da información oficial y actual. Anota fechas, nombres y requisitos.'},
+{id:'v38',t:'vida',lv:[4],who:'together',k:'together',scene:'📁 🪪 🔐',story:'Tener los documentos y datos importantes ordenados da tranquilidad.',q:'Mi carpeta de documentos',tasks:['Reúnan cédula, certificados, informes médicos y recetas.','Elijan un lugar seguro y fácil de encontrar para guardarlos.','Anoten teléfonos de emergencia y de las personas de apoyo.','Preparen una hoja “Cómo apoyarme” con lo que ayuda y lo que no.'],adult:'Los datos de salud son sensibles: guárdelos en un lugar seguro y compártalos solo con consentimiento de la persona. Revise juntos qué se comparte y con quién.'},
+{id:'v39',t:'vida',lv:[4],who:'alone',k:'choice',scene:'🩺 👩‍👧 🙋',story:'Un profesional de salud conversa solo con tu mamá sobre ti.',q:'¿Qué haces?',o:['Digo con respeto: “Esto es sobre mí. Quiero participar en la conversación”','Me quedo callado y dejo que decidan todo','Me enojo y me voy'],ok:0,hint:'Tienes derecho a participar en las decisiones sobre ti.',why:'Las decisiones sobre tu vida y tu salud te incluyen. Pedir participar con calma es ejercer tus derechos y aprender a decidir con apoyo.'}
+];
+
+/* ================= estado ================= */
+const KEY='mundomente.v1';
+let DB={profiles:[],current:null};
+let P=null;
+function load(){try{const r=localStorage.getItem(KEY);if(r){const d=JSON.parse(r);if(d&&Array.isArray(d.profiles))DB=d;}}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){}}
+const DEF={music:false,musicVol:1,avatarVoice:true,voice:'',vtype:'auto',tone:7,squirrel:true,autoRead:false,sound:true,calm:false,big:false,contrast:false,steps:false,lock:false,slow:false,extra:false,chestEvery:6,breakEvery:8};
+function newProfile(o){
+  return Object.assign({id:'p'+Date.now().toString(36),name:'',age:7,level:1,theme:'dino',avatar:'🦖',mode:'juntos',
+    set:Object.assign({},DEF),presets:[],pts:0,xp:0,total:0,firstTry:0,streak:{last:'',n:0},done:{},saved:[],stickers:{},stats:{},
+    solo:{n:0,ft:0},ach:{},sinceChest:0,sinceCalm:0,calmTools:[],
+    rewards:[{t:'10 minutos de mi actividad favorita',c:40},{t:'Elegir el postre o la cena',c:80},{t:'Una salida especial con mi adulto',c:160}]},o);
+}
+const TH=()=>THEMES[P.theme];
+function fill(s){const t=TH();return String(s).replaceAll('{A}',t.A.n).replaceAll('{B}',t.B.n).replaceAll('{a}',t.A.e).replaceAll('{b}',t.B.e).replaceAll('{yo}',P.name||'yo').replaceAll('{topic}',t.topic);}
+const LVL_NAMES=[['🌱','Semilla'],['🌿','Brote'],['🌳','Árbol'],['🌲','Bosque'],['⭐','Estrella'],['☄️','Cometa'],['🌌','Galaxia']];
+const lvlOf=xp=>Math.floor(xp/100)+1;
+const lvlName=n=>LVL_NAMES[Math.min(n-1,LVL_NAMES.length-1)];
+
+/* ================= apariencia ================= */
+function applyLook(){
+  const r=document.documentElement;
+  const th=P?THEMES[P.theme]:THEMES.space;
+  r.style.setProperty('--h',th.h);
+  r.style.setProperty('--fs',P&&P.set.big?1.18:1);
+  r.classList.toggle('calm',!!(P&&P.set.calm));
+  r.classList.toggle('hc',!!(P&&P.set.contrast));
+  r.classList.toggle('steps-on',!!(P&&P.set.steps));
+  const f=$('#feed');if(f)f.classList.toggle('locked',!!(P&&P.set.lock));
+}
+
+/* ================= sonido y voz ================= */
+let AC=null;
+function ac(){AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();return AC;}
+function tone(kind){
+  if(!P||!P.set.sound)return;
+  try{const c=ac();const seq={ok:[523,659,784],try:[330,294],chest:[392,494,587,784],lvl:[523,659,784,1047]}[kind]||[440];let t=c.currentTime;
+    seq.forEach(f=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.07,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.24);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.26);t+=.11;});}catch(e){}
+}
+function glide(f1,f2,dur){
+  if(!P||!P.set.sound)return;
+  try{const c=ac();const now=c.currentTime;const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(f1,now);o.frequency.linearRampToValueAtTime(f2,now+dur);
+    g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(.04,now+.4);g.gain.linearRampToValueAtTime(0,now+dur);o.connect(g);g.connect(c.destination);o.start(now);o.stop(now+dur+.05);}catch(e){}
+}
+let voices=[];
+function loadVoices(){try{voices=speechSynthesis.getVoices();}catch(e){}}
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices;}
+const FEM_RE=/female|mujer|sabina|helena|laura|paulina|monica|mónica|elena|elvira|dalia|paola|salome|salomé|camila|catalina|lupe|marisol|sofia|sofía|valentina|google español/i;
+const MALE_RE=/\bmale\b|\bhombre\b|jorge|diego|pablo|raul|raúl|alvaro|álvaro|juan|carlos|tomas|tomás|enrique|antonio|andres|andrés|miguel/i;
+const isMale=v=>MALE_RE.test(v.name);
+const isFem=v=>FEM_RE.test(v.name)&&!isMale(v);
+function pickVoice(){
+  if(P&&P.set.voice){const sv=voices.find(x=>x.name===P.set.voice);if(sv)return sv;}
+  const es=voices.filter(v=>/^es/i.test(v.lang));
+  let vt=P&&P.set.vtype||'auto';
+  if(vt==='auto'&&P&&P.set.avatarVoice!==false&&VOICES[P.theme])vt=VOICES[P.theme].g==='m'?'man':'girl';
+  const fem=vt==='man'?es.filter(isMale):es.filter(isFem);
+  if(fem.length){
+    for(const pref of ['es-CL','es-419','es-MX','es-US','es-AR','es-ES']){const v=fem.find(x=>x.lang.replace('_','-').toLowerCase()===pref.toLowerCase());if(v)return v;}
+    return fem[0];
+  }
+  for(const pref of ['es-CL','es-419','es-MX','es-US','es-AR','es-ES']){const v=es.find(x=>x.lang.replace('_','-').toLowerCase()===pref.toLowerCase());if(v)return v;}
+  return es[0]||null;
+}
+function clean(t){return t.replace(/[\p{Extended_Pictographic}‍️]/gu,' ').replace(/[“”]/g,'"').replace(/\s+/g,' ').trim();}
+function speak(text,slow){
+  if(!('speechSynthesis' in window))return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(clean(text));const v=pickVoice();
+    if(v){u.voice=v;u.lang=v.lang;}else u.lang='es-CL';
+    const sq=!P||P.set.squirrel!==false;
+    const ti=(P&&P.set.tone!=null)?P.set.tone:7;
+    const av=(P&&P.set.avatarVoice!==false)?VOICES[P.theme]:null;
+    const sf=((P&&P.set.slow)||slow)?.85:1;
+    if(av){u.pitch=av.pitch;u.rate=sf*av.rate;}
+    else{u.pitch=sq?TONES[ti]:1.05;u.rate=sf*(sq?1+ti/7*.12:.93);}
+    curU=u;u.onend=u.onerror=()=>{if(curU===u)duckMusic(false);};
+    duckMusic(true);speechSynthesis.speak(u);}catch(e){}
+}
+function stopSpeak(){curU=null;try{speechSynthesis.cancel();}catch(e){}duckMusic(false);}
+/* ================= música de ambiente y voz según el avatar ================= */
+/* Cada interés tiene su propia melodía, generada con Web Audio (sin archivos). Los patrones son fijos y predecibles, y suenan bajito. */
+const MIDI=m=>440*Math.pow(2,(m-69)/12);
+const MUSIC={
+  dino:{n:'tribal',root:45,scale:[0,3,5,7,10],tempo:84,prog:[0,0,3,2],pat:[0,-1,1,2,-1,1,0,-1],wave:'triangle',oct:12,bass:true,perc:'kick',pad:false,echo:0,gain:.9},
+  space:{n:'espacial',root:48,scale:[0,2,4,6,7,9,11],tempo:66,prog:[0,4,5,3],pat:[0,1,2,1,-1,2,1,-1],wave:'sine',oct:12,bass:false,perc:null,pad:true,echo:.45,gain:.8},
+  animals:{n:'campestre',root:55,scale:[0,2,4,7,9],tempo:100,prog:[0,3,4,0],pat:[0,1,2,1,0,2,1,2],wave:'triangle',oct:12,bass:true,perc:null,pad:false,echo:.15,gain:.9},
+  sea:{n:'marina',root:50,scale:[0,2,4,5,7,9,11],tempo:72,prog:[0,5,3,4],pat:[0,1,2,1,2,1,0,1],wave:'sine',oct:12,bass:false,perc:null,pad:true,echo:.5,gain:.85},
+  robots:{n:'electrónica',root:48,scale:[0,3,5,7,10],tempo:108,prog:[0,0,3,4],pat:[0,2,1,2,0,2,-1,2],wave:'square',oct:12,bass:true,perc:'hat',pad:false,echo:.2,gain:.4},
+  vehicles:{n:'de carretera',root:45,scale:[0,2,4,5,7,9,11],tempo:118,prog:[0,3,4,3],pat:[0,1,2,1,0,1,2,1],wave:'sawtooth',oct:12,bass:true,perc:'kick',pad:false,echo:.1,gain:.3},
+  sports:{n:'de estadio',root:48,scale:[0,2,4,5,7,9,11],tempo:112,prog:[0,3,4,0],pat:[0,-1,2,-1,1,-1,2,2],wave:'sawtooth',oct:12,bass:true,perc:'kick',pad:false,echo:.15,gain:.3},
+  fantasy:{n:'medieval',root:50,scale:[0,2,3,5,7,9,10],tempo:80,prog:[0,0,3,0],pat:[0,2,1,2,0,1,2,1],wave:'triangle',oct:12,bass:false,perc:null,pad:true,drone:true,echo:.35,gain:.9},
+  music:{n:'de jazz suave',root:53,scale:[0,2,4,7,9],tempo:92,prog:[0,3,1,4],pat:[0,2,1,-1,2,1,0,-1],wave:'sine',oct:12,bass:true,perc:'hat',pad:true,echo:.25,gain:.9},
+  games:{n:'de 8 bits',root:60,scale:[0,2,4,7,9],tempo:124,prog:[0,3,4,3],pat:[0,1,2,1,2,1,0,2],wave:'square',oct:0,bass:true,perc:null,pad:false,echo:.1,gain:.28}
+};
+/* Voz según el avatar: tono, velocidad y tipo de voz preferido (g: f = Voces 1, m = Voces 2) */
+const VOICES={
+  dino:{pitch:.65,rate:.88,g:'m',d:'Grave y pausada, como un dinosaurio.'},
+  space:{pitch:1.1,rate:.92,g:'f',d:'Tranquila y clara, como una astronauta.'},
+  animals:{pitch:1.5,rate:1.05,g:'f',d:'Amistosa y brillante.'},
+  sea:{pitch:1.25,rate:.9,g:'f',d:'Suave y fluida, como el mar.'},
+  robots:{pitch:.8,rate:1,g:'m',d:'Pareja y pausada, como un robot.'},
+  vehicles:{pitch:1,rate:1.15,g:'m',d:'Enérgica y rápida.'},
+  sports:{pitch:.9,rate:1.12,g:'m',d:'Animada, como un entrenador.'},
+  fantasy:{pitch:.7,rate:.86,g:'m',d:'Grave y misteriosa, como un mago.'},
+  music:{pitch:1.6,rate:1.08,g:'f',d:'Aguda y alegre, con ritmo.'},
+  games:{pitch:1.8,rate:1.15,g:'f',d:'Aguda y juguetona.'}
+};
+let mus=null,curU=null,noiseBuf=null;
+function getNoise(c){if(!noiseBuf||noiseBuf.sampleRate!==c.sampleRate){const n=Math.floor(c.sampleRate*.08);noiseBuf=c.createBuffer(1,n,c.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;}return noiseBuf;}
+function semis(th,deg){const L=th.scale.length;return th.scale[deg%L]+12*Math.floor(deg/L);}
+function noteAt(c,bus,t,freq,dur,type,gain,att){
+  const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=freq;
+  const a=att||.012;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+Math.max(dur,a+.05));
+  o.connect(g);g.connect(bus);o.start(t);o.stop(t+Math.max(dur,a+.05)+.05);
+}
+function playStep(c,bus,th,step,t,sd){
+  const bar=Math.floor(step/8)%th.prog.length,s=step%8,d=th.prog[bar];
+  const p=th.pat[s];
+  if(p>=0)noteAt(c,bus,t,MIDI(th.root+th.oct+semis(th,d+2*p)),sd*1.8,th.wave,.22*th.gain);
+  if(th.bass&&s%4===0)noteAt(c,bus,t,MIDI(th.root-12+semis(th,d)),sd*3.6,'sine',.3);
+  if(th.pad&&s===0){[0,2,4].forEach(k=>noteAt(c,bus,t,MIDI(th.root+semis(th,d+k)),sd*8,'sine',.07,.9));if(th.drone)noteAt(c,bus,t,MIDI(th.root-12+7),sd*8,'sine',.06,1);}
+  if(th.perc==='kick'&&s%4===0){const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(120,t);o.frequency.exponentialRampToValueAtTime(45,t+.14);
+    g.gain.setValueAtTime(.4,t);g.gain.exponentialRampToValueAtTime(.001,t+.18);o.connect(g);g.connect(bus);o.start(t);o.stop(t+.2);}
+  if(th.perc==='hat'&&s%2===1){const src=c.createBufferSource();src.buffer=getNoise(c);const f=c.createBiquadFilter();f.type='highpass';f.frequency.value=7000;const g=c.createGain();
+    g.gain.setValueAtTime(.05,t);g.gain.exponentialRampToValueAtTime(.001,t+.05);src.connect(f);f.connect(g);g.connect(bus);src.start(t);}
+}
+function startMusic(){
+  if(!P||!P.set.music)return;stopMusic();
+  try{
+    const c=ac();const th=MUSIC[P.theme]||MUSIC.space;
+    const vol=[.05,.09,.14][P.set.musicVol!=null?P.set.musicVol:1]||.09;
+    const master=c.createGain();master.gain.setValueAtTime(0,c.currentTime);master.gain.linearRampToValueAtTime(vol,c.currentTime+2.5);master.connect(c.destination);
+    const dry=c.createGain();dry.connect(master);
+    if(th.echo){const d=c.createDelay(2);d.delayTime.value=60/th.tempo*.75;const fb=c.createGain();fb.gain.value=.35;const wet=c.createGain();wet.gain.value=th.echo;
+      dry.connect(d);d.connect(fb);fb.connect(d);d.connect(wet);wet.connect(master);}
+    mus={c,master,bus:dry,th,vol,step:0,sd:60/th.tempo/2,next:c.currentTime+.15,timer:null};
+    mus.timer=setInterval(()=>{
+      if(!mus)return;
+      while(mus.next<mus.c.currentTime+.5){playStep(mus.c,mus.bus,mus.th,mus.step,mus.next,mus.sd);mus.next+=mus.sd;mus.step++;}
+    },100);
+  }catch(e){mus=null;}
+}
+function stopMusic(){
+  if(!mus)return;const m=mus;mus=null;clearInterval(m.timer);
+  try{m.master.gain.cancelScheduledValues(m.c.currentTime);m.master.gain.setTargetAtTime(0,m.c.currentTime,.25);setTimeout(()=>{try{m.master.disconnect();}catch(e){}},1500);}catch(e){}
+}
+function refreshMusic(){if(P&&P.set.music)startMusic();else stopMusic();}
+function duckMusic(on){if(!mus)return;try{mus.master.gain.setTargetAtTime(on?mus.vol*.25:mus.vol,mus.c.currentTime,.15);}catch(e){}}
+function setMusicVol(i){if(!P)return;P.set.musicVol=i;save();if(mus){mus.vol=[.05,.09,.14][i];try{mus.master.gain.setTargetAtTime(mus.vol,mus.c.currentTime,.2);}catch(e){}}}
+/* el navegador solo deja sonar el audio después de un toque */
+document.addEventListener('pointerdown',()=>{if(!P||!P.set.music)return;if(!mus)startMusic();else if(mus.c.state==='suspended')mus.c.resume();},true);
+
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stopSpeak();stopMusic();}else if(P&&P.set.music)startMusic();});
+
+/* ================= efectos ================= */
+function floatText(text,el){
+  const r=(el||document.body).getBoundingClientRect();
+  const f=h('div',{class:'float',text});
+  f.style.left=Math.max(16,Math.min(window.innerWidth-120,r.left+r.width/2-40))+'px';
+  f.style.top=Math.max(60,r.top-10)+'px';
+  document.body.append(f);setTimeout(()=>f.remove(),1200);
+}
+function confetti(el){
+  if(RM||P.set.calm)return;
+  const r=el.getBoundingClientRect();const em=[...TH().st.map(s=>s[0]).slice(0,3),'⭐','✨'];
+  for(let i=0;i<12;i++){const s=h('span',{class:'conf',text:pick(em)});
+    s.style.left=(r.left+r.width/2)+'px';s.style.top=(r.top+r.height/2)+'px';
+    s.style.setProperty('--dx',(Math.random()*240-120)+'px');s.style.setProperty('--dy',(Math.random()*-200-20)+'px');
+    document.body.append(s);setTimeout(()=>s.remove(),1100);}
+}
+
+/* ================= ventanas ================= */
+function openSheet(title,content,opts={}){
+  const bg=h('div',{class:'sheet-bg'+(opts.mid?' mid':''),onclick:e=>{if(e.target===bg)close();}});
+  const esc=e=>{if(e.key==='Escape')close();};
+  function close(){bg.remove();document.removeEventListener('keydown',esc);if(opts.onclose)opts.onclose();}
+  const head=opts.mid?null:h('div',{class:'sheet-head'},h('h2',{text:title}),h('button',{class:'iconbtn',type:'button','aria-label':'Cerrar',onclick:close,text:'✕'}));
+  const sh=h('div',{class:'sheet',role:'dialog','aria-modal':'true','aria-label':title},head,content);
+  bg.append(sh);document.body.append(bg);document.addEventListener('keydown',esc);
+  setTimeout(()=>{const b=sh.querySelector('button,input');if(b)b.focus();},30);
+  return {close,el:sh};
+}
+let popQ=[],popOpen=false;
+function popup(fn){popQ.push(fn);if(!popOpen)nextPop();}
+function nextPop(){
+  const fn=popQ.shift();if(!fn){popOpen=false;return;}
+  popOpen=true;setTimeout(()=>fn(()=>{popOpen=false;nextPop();}),RM||P.set.calm?300:800);
+}
+function modal(emoji,title,text,btn,cls,done){
+  tone(cls==='chest'?'chest':'lvl');
+  const ref=openSheet(title,h('div',{class:'stack',style:'align-items:center'},
+    h('div',{class:'emo '+(cls||''),text:emoji}),h('h2',{style:'font:800 1.6rem var(--f-display)',text:title}),h('p',{text}),
+    h('button',{class:'btn primary',type:'button',onclick:()=>ref.close(),text:btn||'¡Genial!'})),{mid:true,onclose:done});
+}
+
+/* ================= logros ================= */
+const cnt=(k)=>((P.stats[k]||{}).done||0);
+const ALLST=()=>Object.values(P.stickers).reduce((a,b)=>a+b.length,0);
+const HITOS=[10,25,50,100,200];
+const PROG={a1:()=>[P.total,1],a2:()=>[cnt('mind'),5],a3:()=>[cnt('emo'),5],a4:()=>[cnt('conf'),5],a5:()=>[cnt('talk'),5],a6:()=>[cnt('calm'),3],a7:()=>[P.solo.n,5],a8:()=>[cnt('team'),3],a9:()=>[cnt('digi'),5],a10:()=>[P.firstTry,10],a11:()=>[P.streak.n,3],a12:()=>[P.total,30],a13:()=>[Math.max(0,...Object.values(P.stickers).map(a=>a.length)),6],a14:()=>[cnt('vida'),5],a15:()=>[cnt('vida'),15]};
+const prog=a=>{const r=PROG[a.id]();return [Math.min(r[0],r[1]),r[1]];};
+const ACH=[
+  {id:'a1',i:'👣',n:'Primer paso',d:'Completa tu primer post',f:()=>P.total>=1},
+  {id:'a2',i:'🔍',n:'Detective de mentes',d:'Completa 5 posts de mentes',f:()=>cnt('mind')>=5},
+  {id:'a3',i:'😊',n:'Mapa de emociones',d:'Completa 5 posts de emociones',f:()=>cnt('emo')>=5},
+  {id:'a4',i:'🕊️',n:'Puente de paz',d:'Completa 5 posts de conflictos',f:()=>cnt('conf')>=5},
+  {id:'a5',i:'💬',n:'Club de conversación',d:'Completa 5 posts de conversar',f:()=>cnt('talk')>=5},
+  {id:'a6',i:'🌿',n:'Calma total',d:'Haz 3 pausas de calma',f:()=>cnt('calm')>=3},
+  {id:'a7',i:'🔒',n:'Decido yo',d:'Completa 5 posts “Decido yo”',f:()=>P.solo.n>=5},
+  {id:'a8',i:'👨‍👩‍👧',n:'Juntos somos más',d:'Haz 3 actividades en familia',f:()=>cnt('team')>=3},
+  {id:'a9',i:'🌐',n:'Navegante seguro',d:'Completa 5 posts de mundo online',f:()=>cnt('digi')>=5},
+  {id:'a10',i:'🎯',n:'Pensar antes de elegir',d:'10 aciertos al primer intento',f:()=>P.firstTry>=10},
+  {id:'a11',i:'🔥',n:'Tres días seguidos',d:'Juega 3 días seguidos',f:()=>P.streak.n>=3},
+  {id:'a12',i:'🌟',n:'Constancia',d:'Completa 30 posts',f:()=>P.total>=30},
+  {id:'a13',i:'🏆',n:'Colección completa',d:'Reúne los 6 stickers de un interés',f:()=>Object.values(P.stickers).some(a=>a.length>=6)},
+  {id:'a14',i:'🧭',n:'Rumbo propio',d:'Completa 5 posts de vida adulta',f:()=>cnt('vida')>=5},
+  {id:'a15',i:'🚀',n:'Camino a la vida adulta',d:'Completa 15 posts de vida adulta',f:()=>cnt('vida')>=15}
+];
+function checkAch(){
+  ACH.forEach(a=>{if(!P.ach[a.id]&&a.f()){P.ach[a.id]=today();P.pts+=15;
+    popup(done=>modal(a.i,'¡Logro desbloqueado!',a.n+'. '+a.d+'. Ganas 15 puntos extra.','¡Genial!','',done));}});
+}
+
+/* ================= HUD ================= */
+function updateHud(){
+  $('#hudPts').textContent='⭐ '+P.pts;
+  $('#hudStreak').textContent='🔥 '+P.streak.n;
+  $('#avaBtn').textContent=P.avatar;
+}
+
+/* ================= feed ================= */
+let chan='all',tab='inicio',active=null;
+let tmpDown=0,missStreak=0,frustShown=false;
+const feed=$('#feed');
+const seen=c=>(P.done[c.id]||{n:0}).n;
+const byId=id=>CARDS.find(c=>c.id===id);
+let feedIds=[];
+function eligible(c){
+  const L0=Math.max(0,P.level-tmpDown);const lvOK=c.lv.includes(L0)||(P.set.extra&&L0<4&&c.lv.includes(L0+1));
+  const modeOK=P.mode==='juntos'||(c.who||'both')!=='together';
+  const catOK=chan==='all'||c.t===chan;
+  return lvOK&&modeOK&&catOK;
+}
+function pickBatch(n){
+  let pool=CARDS.filter(eligible).filter(c=>!feedIds.includes(c.id));
+  if(pool.length<n)pool=CARDS.filter(eligible).filter(c=>!feedIds.slice(-4).includes(c.id));
+  pool=shuffle(pool).sort((a,b)=>seen(a)-seen(b));
+  const out=[];let last=feedIds.length?byId(feedIds[feedIds.length-1]).t:null;let sc=P.sinceCalm;
+  while(out.length<n&&pool.length){
+    let idx=-1;
+    if(chan==='all'&&sc>=P.set.breakEvery)idx=pool.findIndex(c=>c.t==='calm');
+    if(idx<0)idx=pool.findIndex(c=>c.t!==last);
+    if(idx<0)idx=0;
+    const c=pool.splice(idx,1)[0];out.push(c);last=c.t;sc=c.t==='calm'?0:sc+1;
+  }
+  return out;
+}
+let rd={N:6,n:0,pts:0,ended:false,posts:[],end:null,start:null};
+let sessPts=0;
+/* Post fijado: al abrir o recargar el juego, este post aparece como el primero de todos. */
+const PIN_FIRST='';let pinDone=false;
+const io=new IntersectionObserver(es=>{
+  es.forEach(e=>{if(!e.isIntersecting)return;const p=e.target;p.classList.add('seen');if(active===p)return;active=p;stopSpeak();
+    if(p._end)p._end();
+    if(P.set.autoRead&&p._ctx)speak(p._ctx.readText());});
+},{root:feed,rootMargin:'-40% 0px -40% 0px',threshold:0});
+function addPost(p){feed.append(p);io.observe(p);return p;}
+/* Una ronda = inicio + posts + cierre. Al completar N posts se abre el cofre y aparece el cierre. */
+function startRound(){
+  missStreak=0;frustShown=false;
+  const N=P.set.chestEvery;rd={N,n:0,pts:0,ended:false,posts:[],end:null,start:null};
+  const list=pickBatch(N+2);
+  let pinCard=null;
+  if(!pinDone){pinDone=true;pinCard=byId(PIN_FIRST)||null;if(pinCard){const i=list.findIndex(c=>c.id===PIN_FIRST);if(i>=0)list.splice(i,1);list.length=Math.min(list.length,N+1);}}
+  if(!list.length){addPost(h('article',{class:'post nr'},h('div',{class:'pmain'},h('p',{class:'q',text:'No hay posts en este canal para tu nivel todavía.'}),h('button',{class:'btn primary',type:'button',text:'Ver todos',onclick:()=>{chan='all';renderChans();resetFeed();}}))));updateRound();return;}
+  if(pinCard){feedIds.push(pinCard.id);const pp=renderPost(pinCard);rd.posts.push(pp);addPost(pp);}
+  rd.start=addPost(renderStart(list.slice(0,N)));
+  list.forEach(c=>{feedIds.push(c.id);const p=renderPost(c);rd.posts.push(p);addPost(p);});
+  rd.end=addPost(renderEnd());updateRound();
+}
+function newRound(){
+  tmpDown=0;stopSpeak();const before=feed.children.length;startRound();
+  const s=feed.children[before];if(s)setTimeout(()=>s.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'}),50);
+}
+function resetFeed(){stopSpeak();io.disconnect();feed.replaceChildren();feedIds=[];active=null;feed.scrollTop=0;sessPts=0;startRound();}
+function next(post){const nx=post.nextElementSibling;if(nx)nx.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'});}
+function updateRound(){$('#rprog').replaceChildren(h('b',{text:'Ronda: '+rd.n+' de '+rd.N}),bar(rd.n/rd.N),h('span',{'aria-hidden':'true',text:'🎁'}));}
+function renderStart(list){
+  const cats=[...new Set(list.map(c=>c.t))];
+  const post=h('article',{class:'post nr',style:'--ch:'+TH().h,'aria-label':'Inicio de la ronda'});
+  post.append(h('div',{class:'pmain'},
+    h('div',{class:'scene',text:TH().A.e+' '+TH().B.e}),
+    h('h3',{class:'q',text:'Hola, '+P.name+'. Esto haremos hoy'}),
+    h('p',{class:'story',text:'Haremos '+rd.N+' posts. Antes de cada uno verás qué tienes que hacer y cuántos puntos puedes ganar.'}),
+    h('div',{class:'cats'},cats.map(k=>h('span',{text:CATS[k].i+' '+CATS[k].c}))),
+    h('p',{class:'story',text:'Al completar los '+rd.N+' abres un cofre 🎁 con un sticker. Aquí nadie te apura y puedes parar cuando quieras.'}),
+    tmpDown?h('div',{class:'banner'},'Esta ronda es más fácil. Pedir una pausa o ayuda está muy bien.'):null,
+    !P.total?h('div',{class:'banner'},h('b',{text:'Cómo se juega: '}),'desliza hacia arriba para ver el siguiente post. 🔊 lo lee en voz alta, ♥ lo guarda y ↗ lo comparte.'):null,
+    h('button',{class:'btn primary',type:'button',text:'Empezar ⬇',onclick:()=>next(post)})));
+  post._ctx={readText:()=>'Hola '+P.name+'. Hoy haremos '+rd.N+' posts. Al completarlos abres un cofre.'};
+  return post;
+}
+function renderEnd(){
+  const R=rd;
+  const post=h('article',{class:'post nr',style:'--ch:'+TH().h,'aria-label':'Fin de la ronda'});
+  const box=h('div',{class:'pmain'});post.append(box);
+  let closed=false,mood=-1;
+  const faces=[['😌','Tranquilo'],['🙂','Bien'],['😐','Así así'],['😟','Nervioso'],['😣','Cansado']];
+  function draw(){
+    const full=R.n>=R.N;
+    if(closed){
+      box.replaceChildren(h('div',{class:'scene',text:'🌙 '+TH().A.e}),h('h3',{class:'q',text:'¡Hasta pronto, '+P.name+'!'}),
+        h('p',{class:'story',text:'Hoy sumaste '+sessPts+' ⭐. Llevas '+P.streak.n+(P.streak.n===1?' día':' días')+' de racha. Volver mañana la mantiene.'}),
+        h('p',{class:'story',text:'Ahora haz algo que te guste: jugar, dibujar o moverte.'}),
+        h('button',{class:'btn primary',type:'button',text:'Volver a empezar',onclick:()=>{closed=false;newRound();}}));return;}
+    box.replaceChildren(h('div',{class:'scene',text:full?'🎁 🎉':'🏁'}),
+      h('h3',{class:'q',text:full?'¡Ronda completa!':'Fin de esta ronda'}),
+      h('p',{class:'story',text:'Completaste '+R.n+' de '+R.N+' posts y ganaste '+R.pts+' ⭐ en esta ronda.'+(full?' Abriste un cofre.':' Te faltaron '+(R.N-R.n)+' para abrir el cofre. Puedes volver atrás y hacerlos.')}),
+      h('b',{text:'¿Cómo te sientes ahora?'}),
+      h('div',{class:'faces'},faces.map((f,i)=>{const b=h('button',{class:'face',type:'button','aria-pressed':String(mood===i)},h('i',{text:f[0]}),f[1]);b.onclick=()=>{mood=i;draw();};return b;})),
+      mood>=0?h('p',{class:'muted',text:mood<=1?'Qué bueno. Fíjate qué te ayudó para repetirlo.':'Gracias por decirlo. Puedes hacer una pausa de calma o contárselo a tu adulto.'}):null,
+      h('div',{class:'srow'},h('button',{class:'btn primary',type:'button',text:'Otra ronda',onclick:newRound}),h('button',{class:'btn',type:'button',text:'Terminar por hoy',onclick:()=>{closed=true;draw();}})));
+  }
+  post._end=draw;post._ctx={readText:()=>'Fin de la ronda. Completaste '+R.n+' de '+R.N+' posts.'};
+  draw();return post;
+}
+function preview(c){
+  const n=(c.o||c.steps||c.tasks||c.phrases||[]).length;const k=c.k;let t;
+  if(k==='choice')t=c.open?'Elige una o más opciones · no hay respuestas malas':'1 pregunta · elige entre '+n+' opciones';
+  else if(k==='scale')t='1 paso · elige una cara del 1 al 5';
+  else if(k==='say')t='Practicas 1 frase · hay '+n+' para elegir';
+  else if(k==='order')t='Ordenar '+n+' pasos';
+  else if(k==='together')t=n+' pasos para hacer con tu adulto';
+  else if(k==='steps')t=n+' pasos cortos';
+  else if(k==='breathe')t=(P.level===0?3:4)+' respiraciones lentas · casi 1 minuto';
+  else t='Encontrar '+(P.level===0?6:15)+' cosas con tus sentidos';
+  const flat=['choice','scale','say','order','together','steps','breathe','senses'].includes(k)&&(c.open||k!=='choice'&&k!=='order');
+  const pts=(flat?8:10)+(c.who==='alone'?4:0);
+  const extra=k==='breathe'?'⏸ Puedes parar cuando quieras':k==='choice'&&c.open?'↩ Puedes cambiar tu elección':'↩ Puedes cambiar si te equivocas';
+  return [t,'hasta +'+pts+' ⭐',extra,'🎁 cuenta para el cofre'];
+}
+document.addEventListener('keydown',e=>{
+  if(tab!=='inicio'||!active||/INPUT|TEXTAREA/.test((e.target||{}).tagName||''))return;
+  if(document.querySelector('.sheet-bg'))return;
+  if(e.key==='ArrowDown'){e.preventDefault();next(active);}
+  if(e.key==='ArrowUp'){e.preventDefault();const pv=active.previousElementSibling;if(pv)pv.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'});}
+});
+
+/* ---- cierre de un post ---- */
+const PRAISE=['¡Bien pensado!','¡Eso es!','¡Buen trabajo!','¡Lo lograste!','¡Excelente!'];
+function finish(ctx,o={}){
+  if(ctx.done)return;ctx.done=true;
+  if(ctx.quick){
+    tone('ok');const d=today();if(P.quickDay!==d){P.quickDay=d;P.quickN=0;}
+    if((P.quickN||0)<3){P.quickN=(P.quickN||0)+1;P.pts+=5;P.xp+=5;const s=P.stats.calm||(P.stats.calm={done:0,ft:0});s.done++;s.ft++;save();updateHud();floatText('+5 ⭐',$('#hudPts'));checkAch();save();}
+    if(ctx.onQuick)ctx.onQuick();return;}
+  if(ctx.preview){ctx.fb.className='fb ok';ctx.fb.hidden=false;ctx.fb.replaceChildren(h('strong',{text:'Así se ve la respuesta'}),h('p',{text:fill(ctx.c.why||'')}),h('span',{class:'pts',text:'Muestra: no suma puntos'}));return;}
+  const c=ctx.c,ft=o.ft!==false;const alone=c.who==='alone';if(ft)missStreak=0;
+  let pts=ft?10:6;if(o.flat)pts=8;if(alone)pts+=4;
+  const d=P.done[c.id]||(P.done[c.id]={n:0,ft:0});d.n++;if(ft)d.ft++;
+  const s=P.stats[c.t]||(P.stats[c.t]={done:0,ft:0});s.done++;if(ft)s.ft++;
+  if(alone){P.solo.n++;if(ft)P.solo.ft++;}
+  P.total++;if(ft)P.firstTry++;
+  P.pts+=pts;const before=lvlOf(P.xp);P.xp+=pts;P.sinceCalm=c.t==='calm'?0:P.sinceCalm+1;
+  if(P.streak.last!==today()){P.streak.n=(P.streak.last===yesterday())?P.streak.n+1:1;P.streak.last=today();}
+  ctx.fb.className='fb ok';ctx.fb.hidden=false;
+  ctx.fb.replaceChildren(
+    h('strong',{text:o.title||(ft?pick(PRAISE):'¡Gracias por intentarlo!')}),
+    h('p',{text:o.text||fill(c.why||'')}),
+    h('span',{class:'pts',text:'+'+pts+' ⭐'+(alone?'  (incluye “Decido yo”)':'')}),
+    rd.posts.includes(ctx.post)?h('p',{class:'muted',text:(rd.n+1>=rd.N)?'¡Con este completas la ronda y abres el cofre! 🎁':'Ronda: '+(rd.n+1)+' de '+rd.N+'. Faltan '+(rd.N-rd.n-1)+' para el cofre 🎁'}):null,
+    alone&&(P.mode==='juntos'||(c.t==='vida'&&withSupport()))?h('p',{class:'muted',text:(c.t==='vida'&&P.companion)?'Ahora comparte con tu acompañante ('+P.companion+') qué elegiste y por qué.':'Ahora cuéntale a tu adulto qué elegiste y por qué.'}):null);
+  const tip=c.adult||ADULT_TIP[c.t];
+  if(P.mode==='juntos'&&tip&&c.k!=='together'){ctx.adultBox.hidden=false;ctx.adultBox.replaceChildren(h('b',{text:'Para el adulto'}),tip);}
+  ctx.skip.textContent='Siguiente ⬇';ctx.skip.className='btn primary';
+  tone(ft?'ok':'try');floatText('+'+pts+' ⭐',ctx.fb);confetti(ctx.fb);
+  const after=lvlOf(P.xp);
+  save();updateHud();
+  if(after>before){const ln=lvlName(after);popup(done=>modal(ln[0],'¡Subiste de nivel!','Ahora eres '+ln[1]+' (nivel '+after+'). ¡Sigue explorando!','¡Vamos!','',done));}
+  sessPts+=pts;
+  if(!P.days)P.days=[];if(!P.days.includes(today())){P.days.push(today());P.days=P.days.slice(-30);}
+  if(rd.posts.includes(ctx.post)){
+    rd.n++;rd.pts+=pts;updateRound();
+    if(rd.n>=rd.N&&!rd.ended){rd.ended=true;let n=ctx.post.nextElementSibling;while(n&&n!==rd.end){const nn=n.nextElementSibling;n.remove();n=nn;}
+      rd.end._end();popup(done=>chestModal(done));}
+  }
+  if(!P.hitos)P.hitos={};
+  HITOS.forEach(t=>{if(P.total>=t&&!P.hitos[t]){P.hitos[t]=today();popup(done=>modal('🎉','¡Hito: '+t+' posts!','Llegaste a '+t+' posts completados. Tu adulto puede celebrarlo contigo con algo que te guste. Mira tus premios en Logros.','¡Genial!','',done));}});
+  checkAch();save();updateHud();
+}
+function chestModal(done){
+  const th=TH();const owned=P.stickers[P.theme]||(P.stickers[P.theme]=[]);
+  const idx=th.st.findIndex((_,i)=>!owned.includes(i));
+  const box=h('div',{class:'stack',style:'align-items:center'});
+  const ref=openSheet('Cofre',box,{mid:true,onclose:done});
+  function closed(){
+    box.replaceChildren(h('div',{class:'emo',text:'🎁'}),h('h2',{style:'font:800 1.6rem var(--f-display)',text:'¡Cofre de logros!'}),
+      h('p',{text:'Cada cierto tiempo ganas un sticker de tu colección.'}),
+      h('button',{class:'btn primary',type:'button',text:'Abrir cofre',onclick:open}));
+    const b=box.querySelector('button');if(b)b.focus();
+  }
+  function open(){
+    tone('chest');
+    if(idx<0){P.pts+=15;P.xp+=15;save();updateHud();
+      box.replaceChildren(h('div',{class:'emo',text:'⭐'}),h('h2',{style:'font:800 1.6rem var(--f-display)',text:'¡Colección completa!'}),h('p',{text:'Ya tienes todos los stickers. Ganas 15 puntos extra.'}),h('button',{class:'btn primary',type:'button',text:'¡Genial!',onclick:()=>ref.close()}));return;}
+    owned.push(idx);save();
+    box.replaceChildren(h('div',{class:'emo',text:th.st[idx][0]}),h('h2',{style:'font:800 1.6rem var(--f-display)',text:'Nuevo sticker: '+th.st[idx][1]}),
+      h('p',{text:'Lo encuentras en la pestaña Mi mundo. Llevas '+owned.length+' de 6.'}),
+      h('button',{class:'btn primary',type:'button',text:'¡Genial!',onclick:()=>ref.close()}));
+    confetti(box);checkAch();
+    const b=box.querySelector('button');if(b)b.focus();
+  }
+  closed();
+}
+
+/* ---- armado de un post ---- */
+function renderPost(c){
+  const cat=CATS[c.t];const who=c.who||'both';
+  const ctx={c,done:false,miss:0,optOrder:null};
+  const post=h('article',{class:'post','data-id':c.id,style:'--ch:'+cat.h,'aria-label':cat.n});
+  post._ctx=ctx;
+  const badge=who==='alone'?'🔒 Decido yo':who==='together'?'👨‍👩‍👧 Juntos':null;
+  const head=h('div',{class:'phead'},h('div',{class:'pav',text:cat.i}),h('div',{class:'pname'},h('b',{text:cat.u}),h('small',{text:cat.n+' · '+LEVELS[P.level].n})),badge?h('span',{class:'badge',text:badge}):null);
+  const steps=h('div',{class:'steps','aria-hidden':'true'},h('span',{class:'on',text:'1 Mira'}),h('span',{text:'2 Piensa'}),h('span',{text:'3 Elige'}),h('span',{text:'4 Mira qué pasó'}));
+  const banner=who==='alone'?h('div',{class:'banner'},h('b',{text:'Esta parte es solo tuya. '}),(c.t==='vida'&&withSupport())?'Decides tú. Si quieres, puedes pedir apoyo a tu acompañante adulto antes de responder.':P.mode==='juntos'?'Tu adulto espera sin ayudar hasta que termines.':'Tú decides.'):
+    who==='together'?h('div',{class:'banner'},h('b',{text:'Para hacer con tu adulto. '}),'Siéntense juntos y háganlo con calma.'):null;
+  const scene=c.scene?h('div',{class:'scene',role:'img','aria-label':'Escena',text:fill(c.scene)}):null;
+  const story=h('p',{class:'story',text:fill(c.story)});
+  const q=h('h3',{class:'q',text:fill(c.q)});
+  ctx.fb=h('div',{class:'fb ok',role:'status','aria-live':'polite',hidden:true});
+  ctx.adultBox=h('div',{class:'adult',hidden:true});
+  ctx.skip=h('button',{class:'btn ghost',type:'button',text:'Saltar'});
+  ctx.skip.onclick=()=>{if(!ctx.done&&P.mode==='juntos'&&false){}next(post);};
+  ctx.post=post;
+  const body=h('div',{class:'pmain'},h('div',{class:'prev'},preview(c).map(t=>h('span',{text:t}))),steps,banner,c.t==='vida'?companionBox():null,scene,story,q);
+  const KIND={choice:kChoice,scale:kScale,say:kSay,order:kOrder,together:kTogether,steps:kSteps,breathe:kBreathe,senses:kSenses};
+  const inter=KIND[c.k](ctx);
+  if(c.k==='together'){const tip=h('div',{class:'adult'},h('b',{text:'Para el adulto'}),c.adult||'');body.append(inter,ctx.adultBox.hidden===true&&c.adult?tip:null);}
+  else body.append(inter);
+  body.append(ctx.fb,ctx.adultBox,h('div',{class:'foot'},h('button',{class:'btn ghost',type:'button',text:'🤔 No entiendo',onclick:()=>helpSheet(ctx)}),ctx.skip));
+  ctx.readText=()=>[c.scene?'':'',fill(c.story),fill(c.q),(ctx.readOpts?ctx.readOpts():'')].join(' ');
+  const saved=P.saved.includes(c.id);
+  const sv=h('button',{class:'rbtn',type:'button','aria-pressed':String(saved),'aria-label':'Guardar: me sirve'},h('i',{text:'♥'}),'Me sirve');
+  sv.onclick=()=>{const i=P.saved.indexOf(c.id);if(i>=0)P.saved.splice(i,1);else P.saved.push(c.id);sv.setAttribute('aria-pressed',String(i<0));save();};
+  const hear=h('button',{class:'rbtn',type:'button','aria-label':'Escuchar este post'},h('i',{text:'🔊'}),'Escuchar');
+  hear.onclick=()=>speak(ctx.readText());
+  const msg='“'+fill(c.q)+'” Esta y más preguntas para aprender a entender a los demás y a uno mismo en Mundo Mente:';
+  const sh=h('a',{class:'rbtn',href:waLink(msg),target:'_blank',rel:'noopener','aria-label':'Compartir por WhatsApp'},h('i',{text:'↗'}),'Compartir');
+  post.append(head,body,h('div',{class:'rail'},hear,sv,sh));
+  // la cabecera queda arriba; el cuerpo debajo
+  return post;
+}
+function waLink(text){return 'https://wa.me/?text='+encodeURIComponent(text+' '+(SHARE_URL||location.href));}
+function noteMiss(){missStreak++;if(missStreak>=3&&!frustShown){frustShown=true;setTimeout(frustSheet,600);}}
+function tryMsg(ctx,text){
+  ctx.fb.className='fb try';ctx.fb.hidden=false;
+  ctx.fb.replaceChildren(h('strong',{text:'Gracias por tu idea 🔎'}),h('p',{text:'Es una posibilidad. Busquemos pistas. '+text}),
+    h('button',{class:'btn',type:'button',text:'🤔 Quiero ayuda',onclick:()=>helpSheet(ctx)}));
+  tone('try');noteMiss();
+}
+const ADULT_HELP=[
+  'No insista ni repita la pregunta con más fuerza. Baje la exigencia y el tono.',
+  'Valide primero: “Es difícil, a muchas personas les cuesta”.',
+  'Si la respuesta es distinta a la esperada, pregunte con curiosidad: “¿Qué pista viste?”. Puede tener sentido desde su punto de vista.',
+  'Ofrezca elegir: una pausa, una tarjeta más fácil o seguir mañana. Elegir baja la frustración.',
+  'Con ironía o frases con doble sentido, explique la regla de forma literal: “dice una cosa, pero siente otra”. Practiquen con ejemplos de su vida diaria.',
+  'Termine siempre con un éxito fácil para cerrar con buena sensación.'
+];
+function helpSheet(ctx){
+  const c=ctx.c;let ci=0;
+  const clues=(c.clues&&c.clues.length)?c.clues.map(fill):(c.hint?[fill(c.hint)]:[]);
+  const parts=fill(c.story).split(/(?<=[.!?…])\s+/).filter(Boolean);
+  const clueBox=h('div',{class:'panel',hidden:true});
+  const ansBox=h('div',{class:'panel',hidden:true});
+  const adultBox=h('div',{class:'panel',hidden:true});
+  const clueBtn=h('button',{class:'btn',type:'button',text:'🔎 Ver una pista'});
+  clueBtn.onclick=()=>{
+    clueBox.hidden=false;
+    if(!clues.length){clueBox.replaceChildren(h('p',{text:'Mira con calma lo que pasa y cómo se sienten las personas.'}));return;}
+    ci=Math.min(ci+1,clues.length);
+    clueBox.replaceChildren(h('b',{text:'Pistas ('+ci+' de '+clues.length+')'}),h('ul',{class:'list'},clues.slice(0,ci).map(t=>h('li',{text:t}))));
+    if(ci>=clues.length){clueBtn.textContent='🔎 Ya no hay más pistas';clueBtn.disabled=true;}else clueBtn.textContent='🔎 Otra pista';
+  };
+  const ref=openSheet('Vamos paso a paso',h('div',{class:'stack'},
+    h('p',{class:'muted',text:'Aquí no hay apuro ni respuestas malas. Elige lo que te ayude.'}),
+    h('div',{class:'panel'},h('b',{text:'La historia en frases cortas'}),h('ul',{class:'list'},parts.map(t=>h('li',{text:t}))),h('b',{text:'La pregunta'}),h('p',{text:fill(c.q)})),
+    h('button',{class:'btn',type:'button',text:'🔊 Escuchar despacio',onclick:()=>speak(ctx.readText(),true)}),
+    clueBtn,clueBox,
+    h('button',{class:'btn',type:'button',text:'👀 Mostrar la respuesta y por qué',onclick:()=>{
+      if(ctx.reveal&&!ctx.done){ref.close();ctx.reveal();return;}
+      ansBox.hidden=false;ansBox.replaceChildren(h('b',{text:'Por qué'}),h('p',{text:fill(c.why||'Tómate el tiempo que necesites.')}));}}),
+    ansBox,
+    h('button',{class:'btn',type:'button',text:'🌬️ Necesito calmarme',onclick:()=>{ref.close();quickCalm();}}),
+    h('button',{class:'btn',type:'button',text:'👨‍👩‍👧 Quiero hablarlo con mi adulto',onclick:()=>{adultBox.hidden=false;adultBox.replaceChildren(h('b',{text:'Para el adulto: si hay frustración o confusión'}),h('ul',{class:'list'},ADULT_HELP.map(t=>h('li',{text:t}))));}}),
+    adultBox,
+    h('button',{class:'btn ghost',type:'button',text:'Saltar este post',onclick:()=>{ref.close();next(ctx.post);}})));
+}
+function frustSheet(){
+  const adult=h('div',{class:'panel',hidden:true});
+  const ref=openSheet('Hagamos una pausa',h('div',{class:'stack'},
+    h('p',{text:'Esto puede estar difícil ahora. No pasa nada: aprender a veces cuesta, y pedir ayuda es parte de aprender.'}),
+    h('button',{class:'btn primary',type:'button',text:'🌬️ Respirar un momento',onclick:()=>{ref.close();quickCalm();}}),
+    h('button',{class:'btn',type:'button',text:'🧸 Probar algo más fácil',onclick:()=>{ref.close();tmpDown=1;resetFeed();}}),
+    h('button',{class:'btn',type:'button',text:'👨‍👩‍👧 Contárselo a mi adulto',onclick:()=>{adult.hidden=false;adult.replaceChildren(h('b',{text:'Para el adulto'}),h('ul',{class:'list'},ADULT_HELP.map(t=>h('li',{text:t}))));}}),
+    adult,
+    h('button',{class:'btn ghost',type:'button',text:'Seguir igual',onclick:()=>ref.close()})));
+}
+function previewLevel(i){
+  const saved=P.level;P.level=i;
+  const pk=f=>CARDS.find(c=>c.lv.includes(i)&&(c.who||'both')!=='together'&&f(c));
+  const picks=[pk(c=>c.t==='mind'&&c.k==='choice'),pk(c=>c.t==='emo'&&c.k==='choice'),pk(c=>c.k==='order'||c.k==='say')].filter(Boolean);
+  const wrap=h('div',{class:'stack'},h('p',{class:'muted',text:'Muestra del '+LEVELS[i].n+' ('+LEVELS[i].a+'). Puedes responder para ver cómo funciona. No suma puntos.'}));
+  picks.forEach(c=>{const post=renderPost(c);post._ctx.preview=true;post.classList.add('seen');post.style.minHeight='0';wrap.append(post);});
+  P.level=saved;
+  openSheet('Así se ve el '+LEVELS[i].n,wrap);
+}
+
+/* ---- tipos de interacción ---- */
+function kChoice(ctx){
+  const c=ctx.c;const okSet=Array.isArray(c.ok)?c.ok:[c.ok];
+  let idx=c.o.map((_,i)=>i);if(!c.open)idx=shuffle(idx);
+  ctx.optOrder=idx;
+  ctx.readOpts=()=>'Opciones. '+idx.map((i,n)=>(n+1)+'. '+fill(c.o[i])).join('. ');
+  const wrap=h('div',{class:'opts',role:'group','aria-label':'Opciones'});
+  const btns={};
+  idx.forEach((i,n)=>{
+    const b=h('button',{class:'opt',type:'button'},h('span',{class:'n',text:String(n+1)}),h('span',{text:fill(c.o[i])}));
+    btns[i]=b;
+    b.onclick=()=>{
+      if(c.open){
+        const on=!b.classList.contains('sel');b.classList.toggle('sel',on);b.setAttribute('aria-pressed',String(on));
+        if(c.calmtool){const sel=idx.filter(j=>btns[j].classList.contains('sel')).map(j=>c.o[j]);P.calmTools=sel;save();}
+        if(!ctx.done)finish(ctx,{flat:true,title:'¡Gracias por contarlo!'});
+        return;}
+      if(ctx.done)return;
+      if(okSet.includes(i)){
+        b.classList.add('ok');Object.values(btns).forEach(x=>{x.disabled=true;if(!x.classList.contains('ok')&&!x.classList.contains('no'))x.classList.add('dim');});
+        finish(ctx,{ft:ctx.miss===0});
+      }else{
+        ctx.miss++;b.classList.add('no');b.disabled=true;
+        if(ctx.miss>=2||c.o.length-ctx.miss<=okSet.length){
+          okSet.forEach(j=>btns[j].classList.add('ok'));Object.values(btns).forEach(x=>{x.disabled=true;if(!x.classList.contains('ok')&&!x.classList.contains('no'))x.classList.add('dim');});
+          noteMiss();finish(ctx,{ft:false,title:'Mira, esta era la pista'});
+        }else tryMsg(ctx,(c.hint?'Pista: '+fill(c.hint):'Lee otra vez con calma.')+' Puedes elegir otra opción.');
+      }
+    };
+    wrap.append(b);
+  });
+  if(c.t==='vida'&&!c.open)wrap.append(h('button',{class:'opt alt',type:'button',onclick:supportSheet},h('span',{class:'n','aria-hidden':'true',text:'🤝'}),h('span',{text:withSupport()?'Prefiero decidirlo con mi acompañante adulto':'Prefiero consultarlo con alguien de confianza'})));
+  if(!c.open)ctx.reveal=()=>{if(ctx.done)return;okSet.forEach(j=>btns[j].classList.add('ok'));Object.values(btns).forEach(x=>{x.disabled=true;if(!x.classList.contains('ok')&&!x.classList.contains('no'))x.classList.add('dim');});finish(ctx,{ft:false,title:'Aquí está la respuesta y por qué'});};
+  return wrap;
+}
+function kScale(ctx){
+  const faces=[['😌','Muy tranquilo'],['🙂','Bien'],['😐','Así así'],['😟','Fuerte'],['😣','Muy fuerte']];
+  const young=P.level<2;
+  const strat=young?[
+    'Qué bien. Fíjate qué te hizo sentir así y cuéntaselo a alguien.',
+    'Qué bien. Fíjate qué te hizo sentir así y cuéntaselo a alguien.',
+    'Haz 3 respiraciones lentas: huele la flor y sopla la vela.',
+    'Haz una pausa: toma agua, aprieta y suelta las manos 5 veces y respira.',
+    'Es una emoción muy grande. Ve a tu lugar tranquilo y pide un abrazo o ayuda a tu adulto. No tienes que resolverlo solo.'
+  ]:[
+    'Disfrútalo. Fíjate qué lo produjo para poder repetirlo.',
+    'Disfrútalo. Fíjate qué lo produjo para poder repetirlo.',
+    'Ponle nombre: ¿es nervios, aburrimiento, cansancio…? Nombrar baja la intensidad. Haz 3 respiraciones lentas.',
+    'Haz una pausa: agua, estirarte, respirar lento. Después piensa qué necesitas.',
+    'Es una emoción muy grande. Busca un lugar tranquilo y a una persona de confianza. Pedir ayuda también es una decisión inteligente.'
+  ];
+  const row=h('div',{class:'faces',role:'group','aria-label':'Termómetro de emociones'});
+  const out=h('div',{class:'panel',hidden:true});
+  const go=h('button',{class:'btn primary',type:'button',text:'Lo voy a hacer'});
+  let sel=-1;
+  ctx.readOpts=()=>'Elige una cara del uno al cinco.';
+  faces.forEach((f,i)=>{
+    const b=h('button',{class:'face',type:'button','aria-pressed':'false'},h('i',{text:f[0]}),f[1]);
+    b.onclick=()=>{if(ctx.done)return;sel=i;[...row.children].forEach((x,j)=>x.setAttribute('aria-pressed',String(j===i)));out.hidden=false;out.replaceChildren(h('b',{text:'Tu número: '+(i+1)}),h('p',{text:strat[i]}),go);};
+    row.append(b);
+  });
+  go.onclick=()=>finish(ctx,{flat:true,title:'¡Gracias por revisar tu cuerpo!',text:'Revisar cómo estás es una habilidad que ayuda a decidir qué hacer. Puedes volver a hacerlo cuando quieras.'});
+  return h('div',{class:'stack'},row,out);
+}
+function kSay(ctx){
+  const c=ctx.c;let sel=-1;
+  ctx.readOpts=()=>'Frases para practicar. '+c.phrases.map(p=>fill(p)).join('. ');
+  const go=h('button',{class:'btn primary',type:'button',text:'✔ Lo hice (dicho, mostrado o escrito)',disabled:true});
+  const list=h('div',{class:'opts'});
+  c.phrases.forEach((p,i)=>{
+    const b=h('button',{class:'opt',type:'button','aria-pressed':'false'},h('span',{text:fill(p)}));
+    const hr=h('button',{class:'hear',type:'button','aria-label':'Escuchar la frase',text:'🔊',onclick:()=>speak(fill(p))});
+    b.onclick=()=>{if(ctx.done)return;sel=i;[...list.querySelectorAll('.opt')].forEach((x,j)=>{x.classList.toggle('sel',j===i);x.setAttribute('aria-pressed',String(j===i));});go.disabled=false;};
+    list.append(h('div',{class:'phr'},b,hr));
+  });
+  go.onclick=()=>finish(ctx,{flat:true,title:'¡Valiente! Lo practicaste',text:'Practicar lo que vamos a decir hace que sea más fácil en la vida real. Hablar, señalar, escribir o usar tarjetas: todas son formas de comunicar.'});
+  return h('div',{class:'stack'},list,go);
+}
+function kOrder(ctx){
+  const c=ctx.c;const total=c.steps.length;let seq=[];
+  let items=c.steps.map((_,i)=>i);items=shuffle(items);if(items.every((v,i)=>v===i))items.reverse();
+  ctx.readOpts=()=>'Toca cada paso en el orden correcto. Pasos: '+items.map(i=>fill(c.steps[i])).join('. ');
+  const info=h('p',{class:'muted',text:'Toca los pasos en orden: el primero que toques será el 1. Si te equivocas, toca un paso con número para quitarlo.'});
+  const count=h('p',{class:'muted',role:'status','aria-live':'polite',text:''});
+  const pool=h('div',{class:'opts'});
+  const btns={};
+  function refresh(){
+    items.forEach(i=>{const o=btns[i];const pos=seq.indexOf(i);
+      o.nb.textContent=pos>=0?String(pos+1):'·';o.b.classList.toggle('sel',pos>=0);o.b.classList.remove('ok','no');
+      o.b.setAttribute('aria-pressed',String(pos>=0));
+      o.b.setAttribute('aria-label',(pos>=0?'Paso '+(pos+1)+'. Toca para quitarlo: ':'Sin número: ')+fill(c.steps[i]));});
+    count.textContent='Llevas '+seq.length+' de '+total+' pasos.';
+  }
+  function lockAll(){items.forEach(i=>{btns[i].b.disabled=true;});}
+  function check(){
+    const bad=seq.filter((v,k)=>v!==k);
+    if(!bad.length){seq.forEach(i=>btns[i].b.classList.add('ok'));lockAll();finish(ctx,{ft:ctx.miss===0});return;}
+    ctx.miss++;
+    seq.forEach((i,k)=>btns[i].b.classList.add(i===k?'ok':'no'));
+    tryMsg(ctx,'Hay pasos en otro lugar. Toca un paso con número para quitarlo y elígelo de nuevo. Los verdes ya están bien.');
+  }
+  items.forEach(i=>{
+    const nb=h('span',{class:'n',text:'·'});
+    const b=h('button',{class:'opt',type:'button','aria-pressed':'false'},nb,h('span',{text:fill(c.steps[i])}));
+    btns[i]={b,nb};
+    b.onclick=()=>{
+      if(ctx.done)return;
+      const pos=seq.indexOf(i);
+      if(pos>=0)seq.splice(pos,1);else seq.push(i);
+      ctx.fb.hidden=true;refresh();
+      if(seq.length===total)check();
+    };
+    pool.append(b);
+  });
+  ctx.reveal=()=>{if(ctx.done)return;seq=c.steps.map((_,k)=>k);refresh();seq.forEach(i=>btns[i].b.classList.add('ok'));lockAll();finish(ctx,{ft:false,title:'Aquí está el orden y por qué'});};
+  refresh();
+  return h('div',{class:'stack'},info,pool,count);
+}
+function kTogether(ctx){
+  const c=ctx.c;let n=0;
+  ctx.readOpts=()=>'Pasos para hacer juntos. '+c.tasks.map(t=>fill(t)).join('. ');
+  const go=h('button',{class:'btn primary',type:'button',text:'¡Lo hicimos juntos!',disabled:true});
+  const list=h('div',{class:'opts'});
+  c.tasks.forEach(t=>{
+    const b=h('button',{class:'chk',type:'button',role:'checkbox','aria-checked':'false'},h('span',{class:'bx',text:''}),h('span',{text:fill(t)}));
+    b.onclick=()=>{if(ctx.done)return;const on=b.getAttribute('aria-checked')!=='true';b.setAttribute('aria-checked',String(on));b.querySelector('.bx').textContent=on?'✓':'';n+=on?1:-1;go.disabled=n<c.tasks.length;};
+    list.append(b);
+  });
+  go.onclick=()=>finish(ctx,{flat:true,title:'¡Qué bonito momento juntos!',text:'Compartir estos ratos fortalece el vínculo. Pueden repetir este juego cambiando de papeles.'});
+  return h('div',{class:'stack'},list,go);
+}
+function kSteps(ctx){
+  const c=ctx.c;let i=0;
+  const arr=c.steps.map(fill);
+  ctx.readOpts=()=>arr.join('. ');
+  const txt=h('div',{class:'bigstep',role:'status','aria-live':'polite'});
+  const dots=h('div',{class:'dots','aria-hidden':'true'},arr.map(()=>h('i')));
+  const go=h('button',{class:'btn primary',type:'button',text:'Hecho ✔'});
+  function show(){txt.replaceChildren(h('small',{class:'muted',text:'Paso '+(i+1)+' de '+arr.length}),h('div',{text:arr[i]}));[...dots.children].forEach((d,j)=>d.classList.toggle('on',j<=i));go.textContent=i===arr.length-1?'Terminé ✔':'Hecho ✔';}
+  go.onclick=()=>{if(ctx.done)return;if(i<arr.length-1){i++;show();}else{finish(ctx,{flat:true,title:'¡Qué calma!',text:'Tu cuerpo aprende a soltar la tensión cuando lo practicas. Puedes repetirlo cuando lo necesites.'});go.disabled=true;}};
+  show();
+  const back=h('button',{class:'btn ghost',type:'button',text:'◀ Paso anterior',onclick:()=>{if(ctx.done||i===0)return;i--;show();}});
+  return h('div',{class:'stack'},txt,dots,go,back);
+}
+function kBreathe(ctx){
+  const young=P.level===0;const cycles=young?3:4;
+  const bub=h('div',{class:'bubble'});
+  const cue=h('div',{class:'cue','aria-live':'polite',text:'Listo cuando tú quieras'});
+  const cnt=h('div',{class:'muted',style:'text-align:center',text:''});
+  const num=h('div',{class:'count','aria-hidden':'true'});
+  const go=h('button',{class:'btn primary',type:'button',text:'Empezar'});
+  let timers=[],running=false;
+  const inTxt=young?'Huele la flor 🌸':'Inspira por la nariz';
+  const outTxt=young?'Sopla la vela 🕯️':'Suelta el aire despacio';
+  function stop(msg){timers.forEach(clearTimeout);timers=[];running=false;num.textContent='';bub.className='bubble';go.textContent='Empezar';cue.textContent=msg||'Listo cuando tú quieras';}
+  function cycle(n){
+    if(!running)return;
+    cnt.textContent='Respiración '+(n+1)+' de '+cycles;
+    for(let s=0;s<4;s++)timers.push(setTimeout(()=>{if(running)num.textContent=String(s+1);},s*1000));
+    for(let s=0;s<6;s++)timers.push(setTimeout(()=>{if(running)num.textContent=String(s+1);},5000+s*1000));
+    timers.push(setTimeout(()=>{if(running)num.textContent='';},4000));
+    cue.textContent=inTxt;bub.className='bubble in';glide(196,262,4);
+    timers.push(setTimeout(()=>{if(!running)return;cue.textContent='Espera un momento…';},4000));
+    timers.push(setTimeout(()=>{if(!running)return;cue.textContent=outTxt;bub.className='bubble out';glide(262,196,6);},5000));
+    timers.push(setTimeout(()=>{if(!running)return;if(n+1<cycles)cycle(n+1);else{stop('¡Muy bien!');cnt.textContent='';finish(ctx,{flat:true,title:'¡Qué tranquilidad!',text:'Respirar lento le dice al cuerpo que está a salvo. Puedes usarlo en la escuela, en casa o antes de una prueba.'});}},11000));
+  }
+  go.onclick=()=>{if(running){stop('Está bien parar. Puedes volver cuando quieras.');cnt.textContent='';return;}running=true;go.textContent='Parar';cycle(0);};
+  ctx.readOpts=()=>'Toca el botón para empezar. '+inTxt+'. Espera. '+outTxt+'.';
+  ctx.stop=()=>stop();
+  return h('div',{class:'stack'},h('div',{class:'bubble-wrap'},bub),num,cue,cnt,go);
+}
+function kSenses(ctx){
+  const young=P.level===0;
+  const rows=(young?[['👀','ves',3],['✋','sientes al tocar',2],['👂','escuchas',1]]:[['👀','ves',5],['✋','sientes al tocar',4],['👂','escuchas',3],['👃','hueles',2],['👅','pruebas o saboreas',1]]);
+  let total=rows.reduce((a,r)=>a+r[2],0),n=0;
+  ctx.readOpts=()=>'Busca '+rows.map(r=>r[2]+' cosas que '+r[1]).join(', ')+'.';
+  const prog=h('p',{class:'muted',text:'Llevas 0 de '+total+'. Si te equivocas, toca de nuevo el círculo para quitarlo.'});
+  const wrap=h('div',{class:'stack'},prog);
+  rows.forEach(r=>{
+    const row=h('div',{class:'srow col'},h('b',{text:r[0]+' '+r[2]+(r[2]>1?' cosas':' cosa')+' que '+r[1]}));
+    const dr=h('div',{class:'srow'});row.append(dr);
+    for(let i=0;i<r[2];i++){const d=h('button',{class:'dot',type:'button','aria-pressed':'false','aria-label':'Círculo '+(i+1)+': '+r[1]},'');
+      d.onclick=()=>{if(ctx.done)return;const on=d.getAttribute('aria-pressed')!=='true';d.setAttribute('aria-pressed',String(on));d.textContent=on?'✓':'';n+=on?1:-1;if(on)tone('ok');
+        prog.textContent='Llevas '+n+' de '+total+'. Si te equivocas, toca de nuevo el círculo para quitarlo.';
+        if(n===total)finish(ctx,{flat:true,title:'¡Aquí y ahora!',text:'Usar los sentidos te ayuda a volver al presente cuando la mente va muy rápido.'});};
+      dr.append(d);}
+    wrap.append(row);
+  });
+  return wrap;
+}
+
+/* ================= canales y navegación ================= */
+function renderChans(){
+  const nav=$('#chans');nav.replaceChildren(h('button',{class:'chan quick',type:'button',text:'🌬️ Calma rápida',onclick:quickCalm}));
+  const list=[['all','✨ Para ti']].concat(Object.keys(CATS).filter(k=>(k!=='team'||P.mode==='juntos')&&(k!=='vida'||P.level>=3)).map(k=>[k,CATS[k].i+' '+CATS[k].c]));
+  list.forEach(([k,l])=>{const b=h('button',{class:'chan',type:'button','aria-pressed':String(chan===k),text:l});
+    b.onclick=()=>{chan=k;renderChans();resetFeed();};nav.append(b);});
+}
+function quickCalm(){
+  const ctx={c:{id:'quick',t:'calm',k:'breathe'},done:false,quick:true,fb:h('div'),miss:0};
+  const el=kBreathe(ctx);
+  const ref=openSheet('Calma rápida',h('div',{class:'stack'},h('p',{class:'muted',text:'Respira con el globo. Al terminar, vuelves al juego. Ganas 5 ⭐ (hasta 3 veces al día).'}),el),{onclose:()=>{if(ctx.stop)ctx.stop();stopSpeak();}});
+  ctx.onQuick=()=>setTimeout(()=>ref.close(),1200);
+}
+let feedTop=0;
+function showTab(t){
+  if(tab==='inicio')feedTop=feed.scrollTop;
+  tab=t;stopSpeak();
+  feed.hidden=t!=='inicio';$('#chans').hidden=t!=='inicio';$('#rprog').hidden=t!=='inicio';
+  ['logros','mundo','familia'].forEach(v=>$('#v-'+v).hidden=t!==v);
+  [...$('#nav').children].forEach(b=>{if(b.dataset.tab===t)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+  if(t==='inicio')feed.scrollTo({top:feedTop,behavior:'instant'});
+  if(t==='logros')renderLogros();
+  if(t==='mundo')renderMundo();
+  if(t==='familia')renderFamilia();
+}
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showTab(b.dataset.tab);});
+
+/* ---- vistas ---- */
+function bar(p){return h('div',{class:'bar',role:'progressbar','aria-valuenow':String(Math.round(p*100)),'aria-valuemin':'0','aria-valuemax':'100'},h('i',{style:'width:'+Math.round(Math.min(1,p)*100)+'%'}));}
+function renderLogros(){
+  const v=$('#v-logros');const L=lvlOf(P.xp),ln=lvlName(L);const rem=P.xp%100;
+  const hero=h('div',{class:'panel'},h('div',{class:'hero'},h('div',{class:'big',text:P.avatar}),h('div',{style:'min-width:0'},h('h2',{text:P.name}),h('p',{class:'muted',text:ln[0]+' '+ln[1]+' · nivel '+L}))),
+    bar(rem/100),h('p',{class:'muted',text:(100-rem)+' puntos para el siguiente nivel · '+P.pts+' puntos para usar'}));
+  const rw=h('div',{class:'panel'},h('h3',{text:'Mis premios de verdad'}),h('p',{class:'muted',text:'Los elige tu familia. Junta puntos y cámbialos con tu adulto.'}));
+  P.rewards.filter(r=>r.t.trim()).forEach(r=>{
+    const row=h('div',{class:'rw'});
+    function base(){
+      row.replaceChildren(h('div',{class:'row'},h('b',{text:r.t}),h('span',{class:'chip',text:r.c+' ⭐'})),bar(P.pts/r.c),
+        h('button',{class:'btn'+(P.pts>=r.c?' primary':''),type:'button',disabled:P.pts<r.c,text:P.pts>=r.c?'Canjear con mi adulto':'Faltan '+(r.c-P.pts)+' puntos',onclick:ask}));
+    }
+    function ask(){row.replaceChildren(h('b',{text:'¿Tu adulto confirma el canje de “'+r.t+'”?'}),h('div',{class:'row'},
+      h('button',{class:'btn primary',type:'button',text:'Sí, canjear',onclick:()=>{P.pts-=r.c;save();updateHud();tone('chest');confetti(row);renderLogros();}}),
+      h('button',{class:'btn',type:'button',text:'Todavía no',onclick:base})));}
+    base();rw.append(row);
+  });
+  const ac=h('div',{class:'panel'},h('h3',{text:'Logros ('+Object.keys(P.ach).length+' de '+ACH.length+')'}),
+    h('div',{class:'grid'},ACH.map(a=>h('div',{class:'ach'+(P.ach[a.id]?'':' lock')},h('i',{text:a.i}),h('b',{text:a.n}),h('small',{text:a.d}),h('small',{text:P.ach[a.id]?'✓ Logrado':prog(a).join(' de ')})))));
+  const goals=h('div',{class:'panel'},h('h3',{text:'Mis próximas metas'}));
+  const addGoal=(t,c,m)=>goals.append(h('div',{class:'rw'},h('div',{class:'row'},h('b',{text:t}),h('span',{class:'muted',text:c+' de '+m})),bar(c/m)));
+  addGoal('Abrir el cofre de esta ronda 🎁',rd.n,rd.N);
+  addGoal('Llegar al nivel '+(L+1),rem,100);
+  const nr=P.rewards.filter(r=>r.t.trim()&&r.c>P.pts).sort((a,b)=>a.c-b.c)[0];
+  if(nr)addGoal('Premio: '+nr.t,P.pts,nr.c);
+  ACH.filter(a=>!P.ach[a.id]).map(a=>[a,prog(a)]).sort((x,y)=>y[1][0]/y[1][1]-x[1][0]/x[1][1]).slice(0,2).forEach(([a,pr])=>addGoal(a.i+' '+a.n,pr[0],pr[1]));
+  const key=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d);}
+  const played=d=>(P.days||[]).includes(key(d));
+  const wk=h('div',{class:'panel'},h('h3',{text:'Mi semana'}),
+    h('div',{class:'dots7'},days.map(d=>h('div',{class:'d7'+(played(d)?' on':'')},h('i',{text:played(d)?'✓':''}),'DLMMJVS'[d.getDay()]))),
+    h('p',{class:'muted',text:'Jugaste '+days.filter(played).length+' de los últimos 7 días. Poco y seguido es mejor que mucho un solo día.'}));
+  const hi=h('div',{class:'panel'},h('h3',{text:'Hitos'}),h('p',{class:'muted',text:'Cuando llegas a un hito, tu familia puede celebrar contigo.'}),
+    h('div',{class:'cats'},HITOS.map(t=>h('span',{text:((P.hitos||{})[t]?'✓ ':'')+t+' posts'}))));
+  const how=h('div',{class:'panel'},h('h3',{text:'¿Cómo gano puntos?'}),h('ul',{class:'list'},[
+    '+10 ⭐ si aciertas al primer intento.','+6 ⭐ si necesitas una pista.','+8 ⭐ en calma, practicar frases y juegos en familia.',
+    '+4 ⭐ extra en los posts “Decido yo”.','+5 ⭐ por cada calma rápida (hasta 3 al día).','+15 ⭐ por cada logro.','Todos los tipos de post suman puntos y cuentan para el cofre de la ronda.','Al completar una ronda abres un cofre con un sticker.','Los puntos nunca se pierden.'].map(t=>h('li',{text:t}))));
+  v.replaceChildren(h('h2',{text:'Mis logros'}),hero,goals,wk,rw,ac,hi,how);
+}
+function renderMundo(){
+  const v=$('#v-mundo');
+  const secs=[];
+  Object.keys(THEMES).filter(k=>k===P.theme||(P.stickers[k]||[]).length).sort((a,b)=>a===P.theme?-1:b===P.theme?1:0).forEach(k=>{
+    const t=THEMES[k],own=P.stickers[k]||[];
+    secs.push(h('div',{class:'panel'},h('h3',{text:t.i+' '+t.n+' · '+own.length+' de 6'}),
+      h('div',{class:'grid'},t.st.map((s,i)=>h('div',{class:'stk'+(own.includes(i)?'':' lock'),'aria-label':own.includes(i)?s[1]:'Sticker por descubrir'},h('span',{text:own.includes(i)?s[0]:'❓'}),h('small',{text:own.includes(i)?s[1]:'Por descubrir'}))))));
+  });
+  const me=h('div',{class:'panel'},h('div',{class:'hero'},h('div',{class:'big',text:P.avatar}),h('div',{},h('h2',{text:P.name}),h('p',{class:'muted',text:'Compañeros de historia: '+TH().A.e+' '+TH().A.n+' y '+TH().B.e+' '+TH().B.n}))),
+    h('button',{class:'btn',type:'button',text:'Cambiar mi interés o avatar',onclick:openInterest}));
+  const sv=P.saved.map(byId).filter(Boolean);
+  const saved=h('div',{class:'panel'},h('h3',{text:'♥ Me sirve'}),sv.length?h('ul',{class:'list'},sv.map(c=>h('li',{text:fill(c.q)}))):h('p',{class:'muted',text:'Toca el corazón en un post para guardarlo aquí y conversarlo en familia.'}));
+  v.replaceChildren(h('h2',{text:'Mi mundo'}),me,...secs,saved);
+}
+function interestPicker(state,onchange){
+  const root=h('div',{class:'stack'});
+  function draw(){
+    root.replaceChildren(
+      h('div',{class:'int-grid'},Object.keys(THEMES).map(k=>{const t=THEMES[k];
+        const b=h('button',{class:'segb',type:'button','aria-pressed':String(state.theme===k)},h('b',{text:t.i+' '+t.n}));
+        b.onclick=()=>{state.theme=k;state.avatar=t.av[0];document.documentElement.style.setProperty('--h',t.h);onchange&&onchange();draw();};return b;})),
+      h('b',{text:'Elige tu avatar'}),
+      h('div',{class:'avs'},THEMES[state.theme].av.map(a=>{const b=h('button',{type:'button','aria-pressed':String(state.avatar===a),'aria-label':'Avatar '+a,text:a});
+        b.onclick=()=>{state.avatar=a;onchange&&onchange();draw();};return b;})),
+      h('p',{class:'muted',text:'En tus historias aparecerán '+THEMES[state.theme].A.e+' '+THEMES[state.theme].A.n+' y '+THEMES[state.theme].B.e+' '+THEMES[state.theme].B.n+'.'}));
+  }
+  draw();return root;
+}
+function openInterest(){
+  const st={theme:P.theme,avatar:P.avatar};
+  const ref=openSheet('Mi interés y mi avatar',h('div',{class:'stack'},interestPicker(st),h('button',{class:'btn primary',type:'button',text:'Guardar',onclick:()=>{
+    P.theme=st.theme;P.avatar=st.avatar;save();applyLook();updateHud();ref.close();resetFeed();refreshMusic();if(tab!=='inicio')showTab(tab);}})),
+    {onclose:()=>applyLook()});
+}
+const SW=[
+  ['autoRead','🔊','Leer en voz alta solo','Cada post se lee cuando aparece.'],
+  ['squirrel','🎵','Voz aguda y alegre','Usa el tono que elijas en Elegir la voz. Apágala para una voz normal.'],
+  ['sound','🔉','Sonidos suaves','Avisos cortos al acertar y al respirar.'],
+  ['calm','🌿','Modo calma','Colores suaves, sin confeti ni movimiento.'],
+  ['big','🔠','Letra grande','Textos más grandes.'],
+  ['contrast','🌗','Alto contraste','Bordes y textos más marcados.'],
+  ['steps','🪜','Mostrar los pasos','Muestra qué viene en cada post.'],
+  ['lock','⏯️','Avanzar con el botón','Sin deslizar: pasas con el botón Siguiente.'],
+  ['slow','🐢','Voz más lenta','Más tiempo para entender.']
+];
+function switches(){
+  return h('div',{class:'stack'},SW.map(([k,i,n,d])=>{
+    const b=h('button',{class:'sw',type:'button',role:'switch','aria-checked':String(!!P.set[k])},h('span',{style:'font-size:1.5rem',text:i}),h('span',{class:'t'},n,h('small',{text:d})),h('span',{class:'tg'}));
+    b.onclick=()=>{P.set[k]=!P.set[k];b.setAttribute('aria-checked',String(P.set[k]));save();applyLook();if(!P.set.autoRead&&k==='autoRead')stopSpeak();};
+    return b;}));
+}
+const NOTES=['Do','Re','Mi','Fa','Sol','La','Si','Do agudo'];
+const TONES=[0.6,0.8,1,1.2,1.4,1.6,1.8,2];
+function switchBtn(icon,title,desc,on){
+  return h('button',{class:'sw',type:'button',role:'switch','aria-checked':String(!!on)},h('span',{style:'font-size:1.5rem','aria-hidden':'true',text:icon}),h('span',{class:'t'},title,h('small',{text:desc})),h('span',{class:'tg'}));
+}
+function voicePanel(){
+  const box=h('div',{class:'panel'});
+  function draw(){
+    loadVoices();
+    const av=P.set.avatarVoice!==false;
+    const all=voices.filter(v=>/^es/i.test(v.lang));
+    const vt=P.set.vtype||'auto';
+    const typed=vt==='man'?all.filter(isMale):vt==='girl'?all.filter(isFem):all;
+    const list=typed.length?typed:all;
+    const test=()=>speak('¡Hola! Soy '+TH().A.n+'. ¡Vamos a aprender juntos!');
+    const sel=h('select',{class:'field',id:'voiceSel','aria-label':'Elegir voz'},h('option',{value:'',text:'Automática'}),list.map(v=>h('option',{value:v.name,text:v.name+' · '+v.lang})));
+    sel.value=P.set.voice||'';sel.onchange=()=>{P.set.voice=sel.value;save();test();};
+    const tipo=[['auto','Todas'],['girl','Voces 1'],['man','Voces 2']];
+    const swAv=switchBtn('🎭','Voz según mi avatar',av?VOICES[P.theme].d:'Apagada: eliges tú el tono.',av);
+    swAv.onclick=()=>{P.set.avatarVoice=!av;save();draw();test();};
+    box.replaceChildren(h('h3',{text:'🎵 Elegir la voz'}),swAv,
+      h('div',{class:'seg',style:'grid-template-columns:repeat(3,1fr)'},tipo.map(([k,l])=>{const bt=h('button',{class:'segb',type:'button','aria-pressed':String(vt===k),text:l});bt.onclick=()=>{P.set.vtype=k;P.set.voice='';save();draw();test();};return bt;})),
+      all.length?sel:h('p',{class:'muted',text:'Este aparato no tiene voces en español. En Android: Ajustes > Idioma > Salida de texto a voz > instalar voz en español. En iPhone: Ajustes > Accesibilidad > Contenido hablado > Voces.'}),
+      (typed.length||vt==='auto'||!all.length)?null:h('p',{class:'muted',text:'Tu celular no trae voces de ese grupo: se muestran todas.'}),
+      av?h('p',{class:'muted',text:'Con la voz según tu avatar, el tono y la velocidad los decide tu avatar. Apágala para elegir el tono tú.'}):
+        h('div',{class:'stack'},h('b',{text:'Tono, de grave a agudo'}),
+          h('div',{class:'ages'},NOTES.map((n,i)=>{const bt=h('button',{type:'button','aria-pressed':String((P.set.tone!=null?P.set.tone:7)===i),text:n,style:'width:auto;padding:0 14px'});bt.onclick=()=>{P.set.tone=i;P.set.squirrel=true;save();draw();test();};return bt;})),
+          h('p',{class:'muted',text:'Do es el más grave y Do agudo el más agudo. Si tu celular no cambia el tono, prueba otra voz de la lista.'})),
+      h('button',{class:'btn',type:'button',text:'🔊 Probar la voz',onclick:test}));
+  }
+  draw();return box;
+}
+function musicPanel(){
+  const box=h('div',{class:'panel'});
+  function draw(){
+    const on=!!P.set.music;const th=MUSIC[P.theme]||MUSIC.space;
+    const sw=switchBtn('🎶','Música de ambiente','Melodía '+th.n+', según tu avatar.',on);
+    sw.onclick=()=>{P.set.music=!on;save();refreshMusic();draw();};
+    const vol=[['Bajo',0],['Medio',1],['Alto',2]];
+    const cur=P.set.musicVol!=null?P.set.musicVol:1;
+    box.replaceChildren(h('h3',{text:'🎶 Música'}),sw,
+      on?h('div',{class:'seg',style:'grid-template-columns:repeat(3,1fr)',role:'group','aria-label':'Volumen de la música'},vol.map(([l,i])=>{const bt=h('button',{class:'segb',type:'button','aria-pressed':String(cur===i),text:l});bt.onclick=()=>{setMusicVol(i);draw();};return bt;})):null,
+      h('p',{class:'muted',text:'La música baja sola cuando el juego lee en voz alta. Si algún sonido te molesta, apágala.'}));
+  }
+  draw();return box;
+}
+$('#setBtn').onclick=()=>openSheet('Cómo me gusta jugar',h('div',{class:'stack'},h('p',{class:'muted',text:'Aquí nadie te apura: no hay reloj ni castigos. Cambia lo que te haga sentir mejor.'}),musicPanel(),voicePanel(),switches()));
+$('#avaBtn').onclick=()=>{
+  const L=lvlOf(P.xp),ln=lvlName(L);
+  const ref=openSheet('Mi perfil',h('div',{class:'stack'},
+    h('div',{class:'hero'},h('div',{class:'big',text:P.avatar}),h('div',{},h('h2',{text:P.name}),h('p',{class:'muted',text:ln[0]+' '+ln[1]+' · nivel '+L}))),
+    h('button',{class:'btn',type:'button',text:'Cambiar mi interés o avatar',onclick:()=>{ref.close();openInterest();}}),
+    h('button',{class:'btn',type:'button',text:'Cambiar de jugador o crear uno nuevo',onclick:()=>{ref.close();onboarding();}})));
+};
+
+/* ---- Familia ---- */
+/* Transición a la vida adulta: hasta los 18 años se ofrece elegir un acompañante adulto.
+   Desde los 18 la persona decide si avanza sola o acompañada. */
+const COMPANIONS=['Mamá','Papá','Otro familiar','Tutor o tutora','Profesional de apoyo','Otra persona adulta de confianza'];
+const isAdultAge=()=>(P.age||0)>=18;
+const withSupport=()=>!isAdultAge()||!P.vidaSolo;
+const modeLocked=()=>(P.age||0)>=15&&(P.age||0)<18;
+function companionBox(){
+  const box=h('div',{class:'panel'});
+  let open=!P.companion;
+  function draw(){
+    const kids=[];
+    if(!isAdultAge()){
+      kids.push(h('b',{text:'Transición a la vida adulta: hasta los 18 años avanzas con apoyo'}),
+        h('p',{class:'muted',text:'Tú decides tus respuestas. Elige a tu acompañante adulto para conversar lo que decidas.'}));
+    }else{
+      kids.push(h('b',{text:'Tienes 18 años: tú decides si avanzas solo o con acompañante.'}),
+        h('div',{class:'seg'},
+          h('button',{class:'segb',type:'button','aria-pressed':String(!P.vidaSolo),text:'Con acompañante',onclick:()=>{P.vidaSolo=false;save();draw();}}),
+          h('button',{class:'segb',type:'button','aria-pressed':String(!!P.vidaSolo),text:'Solo',onclick:()=>{P.vidaSolo=true;save();draw();}})));
+    }
+    if(withSupport()){
+      kids.push(h('p',{class:'muted',text:P.companion?'Mi acompañante adulto: '+P.companion:'Aún no eliges a tu acompañante adulto.'}));
+      if(open||!P.companion){
+        kids.push(h('div',{class:'cats',role:'group','aria-label':'Elegir acompañante adulto'},COMPANIONS.map(n=>
+          h('button',{class:'chan',type:'button','aria-pressed':String(P.companion===n),text:n,onclick:()=>{P.companion=n;open=false;save();draw();}}))));
+      }else kids.push(h('button',{class:'btn',type:'button',text:'Cambiar acompañante',onclick:()=>{open=true;draw();}}));
+    }
+    box.replaceChildren(...kids);
+  }
+  draw();return box;
+}
+function supportSheet(){
+  const who=P.companion?'tu acompañante ('+P.companion+')':'una persona adulta de confianza';
+  const ref=openSheet('Decidirlo con apoyo',h('div',{class:'stack'},
+    h('p',{text:'Pedir apoyo para decidir es parte de ser adulto. Esta opción no cambia tu respuesta ni tus puntos.'}),
+    h('ul',{class:'list'},['Cuéntale la situación a '+who+'.','Pregúntale qué piensa y por qué.','Anota las ideas que te sirvan.','Vuelve y elige tú la respuesta que mejor te represente.'].map(t=>h('li',{text:t}))),
+    withSupport()?companionBox():null,
+    h('button',{class:'btn primary',type:'button',text:'Listo, vuelvo a decidir',onclick:()=>ref.close()})));
+}
+const PRESETS=[
+  {id:'tea',n:'Autismo (TEA)',d:'Rutina predecible: avanza con botón, muestra los pasos y modo calma.',s:{lock:true,steps:true,calm:true,sound:false,music:false}},
+  {id:'tdah',n:'TDAH',d:'Premios más frecuentes, pausas de movimiento y pasos visibles.',s:{steps:true,chestEvery:4,breakEvery:5}},
+  {id:'lect',n:'Dislexia o lectura lenta',d:'Lectura en voz alta automática y letra grande.',s:{autoRead:true,big:true}},
+  {id:'leng',n:'Lenguaje (TDL o TEL)',d:'Voz lenta, pasos visibles y frases para practicar.',s:{autoRead:true,slow:true,steps:true}},
+  {id:'ans',n:'Ansiedad o sensibilidad sensorial',d:'Modo calma, sin sonidos y pausas frecuentes.',s:{calm:true,sound:false,lock:true,breakEvery:4,music:false}},
+  {id:'alta',n:'Altas capacidades',d:'Mezcla posts del nivel siguiente para más desafío.',s:{extra:true}},
+  {id:'di',n:'Discapacidad intelectual o síndrome de Down',d:'Voz, letra grande y pasos. Considere partir un nivel más abajo.',s:{autoRead:true,big:true,steps:true,slow:true}}
+];
+const AREAS=[['mind','Leer mentes'],['emo','Emociones'],['conf','Conflictos'],['talk','Conversar'],['calm','Calma'],['digi','Mundo online'],['vida','Vida adulta'],['team','En familia']];
+function renderFamilia(){
+  const v=$('#v-familia');
+  const mode=h('div',{class:'panel'},h('h3',{text:'¿Quién juega ahora?'}),
+    h('div',{class:'seg'},
+      h('button',{class:'segb',type:'button',disabled:modeLocked(),'aria-pressed':String(P.mode==='solo')},h('b',{text:'Yo solo o sola'}),h('small',{text:modeLocked()?'Desde los 18 años':'Sin posts para el adulto'})),
+      h('button',{class:'segb',type:'button','aria-pressed':String(P.mode==='juntos')},h('b',{text:'Con mi adulto'}),h('small',{text:'Incluye juegos en familia y guía'}))));
+  const mb=mode.querySelectorAll('.segb');
+  mb[0].onclick=()=>{if(modeLocked())return;P.mode='solo';save();renderChans();resetFeed();renderFamilia();};
+  mb[1].onclick=()=>{P.mode='juntos';save();renderChans();resetFeed();renderFamilia();};
+  const agePanel=h('div',{class:'panel'},h('h3',{text:'Edad y acompañante'}),
+    h('label',{for:'ageSel',class:'muted',text:'Edad de la persona'}),
+    h('select',{class:'field',id:'ageSel','aria-label':'Edad',onchange:e=>{P.age=parseInt(e.target.value)||P.age;if(modeLocked()&&P.mode==='solo')P.mode='juntos';save();renderChans();resetFeed();renderFamilia();}},
+      [4,5,6,7,8,9,10,11,12,13,14,15,16,17,18].map(a=>h('option',{value:String(a),text:a+' años',selected:P.age===a}))),
+    h('p',{class:'muted',text:'En la transición a la vida adulta, hasta los 18 años se avanza con un acompañante adulto. Desde los 18, la persona decide si avanza sola o acompañada.'}),
+    h('p',{class:'muted',text:(P.age>=18?(P.vidaSolo?'Decisión actual: avanza sola.':'Decisión actual: avanza con acompañante.'):'Acompañante elegido: ')+((P.age<18||!P.vidaSolo)?(P.companion||'aún no elige'):'')}));
+  const lv=h('div',{class:'panel'},h('h3',{text:'Nivel de los posts'}),h('p',{class:'muted',text:'Elija según cómo comprende hoy, no solo según la edad. Se puede cambiar cuando quiera.'}),
+    h('div',{class:'seg four'},LEVELS.map((l,i)=>{const b=h('button',{class:'segb',type:'button','aria-pressed':String(P.level===i)},h('b',{text:l.n+' · '+l.a}),h('small',{text:l.d}));
+      b.onclick=()=>{P.level=i;save();resetFeed();renderFamilia();};return b;})));
+  const pre=h('div',{class:'panel'},h('h3',{text:'Apoyos sugeridos'}),h('p',{class:'muted',text:'Son atajos para ajustar el juego, no diagnósticos. Cada niño o niña es distinto: afine con los interruptores de ⚙️.'}),
+    PRESETS.map(p=>{const on=P.presets.includes(p.id);
+      const b=h('button',{class:'pre',type:'button','aria-pressed':String(on)},h('b',{text:(on?'✓ ':'')+p.n}),h('small',{text:p.d}));
+      b.onclick=()=>{
+        if(P.presets.includes(p.id)){P.presets=P.presets.filter(x=>x!==p.id);Object.keys(p.s).forEach(k=>P.set[k]=DEF[k]);}
+        else{P.presets.push(p.id);Object.assign(P.set,p.s);}
+        save();applyLook();renderFamilia();if(p.s.extra!==undefined)resetFeed();};
+      return b;}),
+    h('button',{class:'btn',type:'button',text:'Abrir todos los apoyos',onclick:()=>$('#setBtn').click()}));
+  const sum=h('div',{class:'panel'},h('h3',{text:'Cómo va '+P.name}),
+    h('p',{class:'muted',text:P.total+' posts completados · racha de '+P.streak.n+' día'+(P.streak.n===1?'':'s')+'. La barra muestra los aciertos al primer intento.'}),
+    AREAS.map(([k,l])=>{const s=P.stats[k]||{done:0,ft:0};return h('div',{class:'sbar'},h('span',{text:l}),bar(s.done?s.ft/s.done:0),h('span',{text:String(s.done)}));}),
+    h('p',{class:'muted',text:'Autonomía (“Decido yo”): '+P.solo.n+' decisiones, '+P.solo.ft+' al primer intento.'}),
+    P.calmTools.length?h('div',{},h('b',{text:'Su caja de calma: '}),P.calmTools.join(' · ')):h('p',{class:'muted',text:'Caja de calma: aún no elige (post “¿Qué te ayuda a calmarte?”).'}));
+  const rw=h('div',{class:'panel'},h('h3',{text:'Premios de verdad'}),h('p',{class:'muted',text:'Escriba premios reales y su costo en puntos. Los puntos se ganan jugando y se descuentan al canjear.'}),
+    P.rewards.map((r,i)=>h('div',{class:'srow'},
+      h('input',{class:'field',style:'flex:1;min-width:160px',type:'text',id:'rwt'+i,value:r.t,'aria-label':'Premio '+(i+1),maxlength:'60',oninput:e=>{r.t=e.target.value;save();}}),
+      h('input',{class:'field',style:'width:90px',type:'number',id:'rwc'+i,value:String(r.c),min:'5',max:'1000','aria-label':'Puntos del premio '+(i+1),oninput:e=>{r.c=Math.max(5,parseInt(e.target.value)||5);save();}}))));
+  const url=SHARE_URL||location.href;
+  const shareMsg='🧠 Mundo Mente: un juego para aprender a entender a los demás y a uno mismo (emociones, amistades, conflictos y calma). Se juega deslizando, como una red social, solo o en familia. Pruébalo aquí:';
+  const sh=h('div',{class:'panel'},h('h3',{text:'Compartir'}),
+    h('a',{class:'btn primary',style:'text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center',href:waLink(shareMsg),target:'_blank',rel:'noopener',text:'Compartir por WhatsApp'}),
+    h('input',{class:'field',type:'text',readonly:true,id:'lnk',value:url,'aria-label':'Enlace del juego',onfocus:e=>e.target.select()}),
+    h('button',{class:'btn',type:'button',text:'Copiar enlace',onclick:e=>{const b=e.target;const ok=()=>{b.textContent='¡Copiado!';setTimeout(()=>b.textContent='Copiar enlace',1500);};
+      try{navigator.clipboard.writeText(url).then(ok,()=>{$('#lnk').select();b.textContent='Selecciona y copia arriba';});}catch(err){$('#lnk').select();b.textContent='Selecciona y copia arriba';}}}));
+  const guide=h('div',{class:'panel'},h('h3',{text:'Guía rápida para adultos'}),
+    h('ul',{class:'list'},[
+      'Los posts “Decido yo” son solo del niño o la niña: espere sin ayudar y después pregunte “¿Cómo lo pensaste?”.',
+      'En “Juntos” siéntense lado a lado, sin prisa. Valide la emoción antes de aconsejar.',
+      'Aquí no hay respuestas incorrectas castigadas: si se equivoca, aparece una pista. Equivocarse es parte de aprender.',
+      'Si se frustra, use un post de Calma o cierre por hoy. Mejor poco y todos los días.',
+      'Puede saltar los posts que no le gusten. Elegir qué ver también entrena la autonomía.',
+      'Lo que se trabaja: creencias falsas, deseos distintos, intenciones, ironía, metidas de pata, emociones mezcladas, mensajes yo, turnos de conversación y seguridad en línea.'
+    ].map(t=>h('li',{text:t}))),
+    h('p',{class:'muted',text:'Mundo Mente es un apoyo educativo, no reemplaza evaluación ni terapia profesional. Todo se guarda solo en este dispositivo: no se envía nombre ni datos a ningún lugar.'}),
+    h('button',{class:'btn',type:'button',text:'Borrar los datos de este jugador',onclick:e=>{
+      const b=e.target;if(b.dataset.s!=='1'){b.dataset.s='1';b.textContent='¿Seguro? Toca otra vez para borrar';return;}
+      DB.profiles=DB.profiles.filter(x=>x.id!==P.id);DB.current=null;save();location.reload();}}));
+  const lvprev=h('div',{class:'panel'},h('h3',{text:'Ver cómo se ve cada nivel'}),h('p',{class:'muted',text:'Pruebe una muestra de cada nivel sin cambiar su avance. Así sabe cómo se ve para niños más pequeños o más grandes.'}),
+    h('div',{class:'seg four'},LEVELS.map((l,i)=>h('button',{class:'segb',type:'button',onclick:()=>previewLevel(i)},h('b',{text:l.n+' · '+l.a}),h('small',{text:'Ver muestra'})))));
+  const frus=h('div',{class:'panel'},h('h3',{text:'Si aparece frustración o confusión'}),
+    h('p',{class:'muted',text:'Cada post tiene el botón “🤔 No entiendo”, con frases cortas, pistas una por una, la respuesta con su porqué y una pausa. Después de varios errores seguidos el juego ofrece respirar o probar algo más fácil.'}),
+    h('ul',{class:'list'},ADULT_HELP.map(t=>h('li',{text:t}))));
+  const tel=h('div',{class:'panel'},h('h3',{text:'Teléfonos de ayuda en Chile'}),
+    h('p',{class:'muted',text:'Verifique que sigan vigentes antes de compartirlos.'}),
+    h('ul',{class:'list'},['131: ambulancia (emergencia de salud).','132: Bomberos.','133: Carabineros.','*4141: línea de prevención del suicidio.','600 360 7777: Salud Responde (orientación de salud).'].map(t=>h('li',{text:t}))));
+  v.replaceChildren(h('h2',{text:'Zona de familia'}),mode,agePanel,lv,lvprev,pre,sum,rw,frus,tel,sh,guide);
+}
+
+/* ================= bienvenida ================= */
+function onboarding(){
+  stopSpeak();stopMusic();
+  const ob=$('#ob');$('#shell').hidden=true;ob.hidden=false;
+  const st={step:0,name:'',age:null,theme:'dino',avatar:'🦖',mode:'juntos',sound:true,music:true,autoRead:false,calm:false};
+  document.documentElement.style.setProperty('--h',THEMES.dino.h);
+  function draw(){
+    const kids=[];
+    if(st.step===0){
+      kids.push(h('div',{class:'obbig',text:'Mundo Mente'}),
+        h('p',{class:'story',text:'Aprende a entender a los demás y a ti mismo, un post a la vez. Sin reloj, sin castigos y a tu ritmo.'}));
+      if(DB.profiles.length){kids.push(h('b',{text:'Seguir jugando como:'}),h('div',{class:'stack'},DB.profiles.map(p=>h('button',{class:'segb',type:'button',onclick:()=>{DB.current=p.id;save();start();}},h('b',{text:p.avatar+'  '+p.name}),h('small',{text:'Nivel '+(p.level+1)+' · '+p.pts+' puntos'})))));}
+      kids.push(h('button',{class:'btn primary',type:'button',text:DB.profiles.length?'Nuevo jugador':'Empezar',onclick:()=>{st.step=1;draw();}}));
+    }
+    if(st.step===1){
+      const nm=h('input',{class:'field',id:'obname',type:'text',value:st.name,maxlength:'20',autocomplete:'off','aria-label':'Tu nombre',placeholder:'Escribe tu nombre',oninput:e=>{st.name=e.target.value;nx.disabled=!(st.name.trim()&&st.age);}});
+      const nx=h('button',{class:'btn primary',type:'button',text:'Siguiente',disabled:!(st.name.trim()&&st.age),onclick:()=>{st.step=2;draw();}});
+      kids.push(h('h2',{class:'obbig',style:'font-size:1.8rem',text:'¿Cómo te llamas?'}),nm,h('b',{text:'¿Cuántos años tienes?'}),
+        h('div',{class:'ages'},[4,5,6,7,8,9,10,11,12,13,14,15,16,17,18].map(a=>h('button',{type:'button','aria-pressed':String(st.age===a),text:String(a),'aria-label':a+' años',onclick:()=>{st.age=a;draw();}}))),
+        h('p',{class:'muted',text:'Con esto elegimos el nivel. Tu adulto lo puede cambiar después.'}),
+        h('div',{class:'srow'},h('button',{class:'btn',type:'button',text:'Atrás',onclick:()=>{st.step=0;draw();}}),nx));
+    }
+    if(st.step===2){
+      kids.push(h('h2',{class:'obbig',style:'font-size:1.8rem',text:'¿Qué te gusta más?'}),interestPicker(st,()=>{}),
+        h('div',{class:'srow'},h('button',{class:'btn',type:'button',text:'Atrás',onclick:()=>{st.step=1;draw();}}),h('button',{class:'btn primary',type:'button',text:'Siguiente',onclick:()=>{st.step=3;draw();}})));
+    }
+    if(st.step===3){
+      if(st.age>=15&&st.age<18)st.mode='juntos';
+      const sw=(k,i,n,d)=>{const b=h('button',{class:'sw',type:'button',role:'switch','aria-checked':String(st[k])},h('span',{style:'font-size:1.5rem',text:i}),h('span',{class:'t'},n,h('small',{text:d})),h('span',{class:'tg'}));b.onclick=()=>{st[k]=!st[k];b.setAttribute('aria-checked',String(st[k]));};return b;};
+      kids.push(h('h2',{class:'obbig',style:'font-size:1.8rem',text:'¿Cómo quieres jugar?'}),
+        h('div',{class:'seg'},
+          h('button',{class:'segb',type:'button',disabled:(st.age>=15&&st.age<18),'aria-pressed':String(st.mode==='solo'),onclick:()=>{st.mode='solo';draw();}},h('b',{text:'Yo solo o sola'}),h('small',{text:(st.age>=15&&st.age<18)?'Desde los 18 años':''})),
+          h('button',{class:'segb',type:'button','aria-pressed':String(st.mode==='juntos'),onclick:()=>{st.mode='juntos';draw();}},h('b',{text:'Con mi adulto'}))),
+        sw('autoRead','🔊','Leer en voz alta solo','Escucho cada post.'),
+        sw('sound','🔉','Sonidos suaves','Avisos cortos al acertar.'),
+        sw('music','🎶','Música de ambiente','Una melodía suave según tu avatar.'),
+        sw('calm','🌿','Modo calma','Colores suaves y sin confeti.'),
+        h('p',{class:'muted',text:'Aquí nadie te apura. Puedes cambiar todo esto cuando quieras en ⚙️.'}),
+        h('div',{class:'srow'},h('button',{class:'btn',type:'button',text:'Atrás',onclick:()=>{st.step=2;draw();}}),h('button',{class:'btn primary',type:'button',text:'¡Entrar a Mundo Mente!',onclick:create})));
+    }
+    ob.replaceChildren(h('div',{class:'stack'},kids));
+    const f=ob.querySelector('input,button');if(st.step===1&&f)setTimeout(()=>f.focus(),30);
+    ob.scrollTop=0;
+  }
+  function create(){
+    const lvl=st.age<=6?0:st.age<=9?1:st.age<=12?2:st.age<=14?3:4;
+    const p=newProfile({name:st.name.trim(),age:st.age,level:lvl,theme:st.theme,avatar:st.avatar,mode:(st.age>=15&&st.age<18)?'juntos':st.mode});
+    p.set.sound=st.sound;p.set.music=st.music;p.set.autoRead=st.autoRead;p.set.calm=st.calm;
+    DB.profiles.push(p);DB.current=p.id;save();start();
+  }
+  draw();
+}
+
+/* ================= inicio ================= */
+function start(){
+  P=DB.profiles.find(p=>p.id===DB.current);
+  if(!P){onboarding();return;}
+  P.set=Object.assign({},DEF,P.set);
+  if(modeLocked()&&P.mode==='solo'){P.mode='juntos';save();}
+  $('#ob').hidden=true;$('#shell').hidden=false;
+  chan='all';tab='inicio';feed.hidden=false;$('#chans').hidden=false;$('#rprog').hidden=false;['logros','mundo','familia'].forEach(v=>$('#v-'+v).hidden=true);
+  [...$('#nav').children].forEach(b=>{if(b.dataset.tab==='inicio')b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+  applyLook();updateHud();renderChans();resetFeed();refreshMusic();
+}
+load();
+if(DB.profiles.length&&DB.current&&DB.profiles.some(p=>p.id===DB.current))start();else onboarding();
+})();
+</script>
+
+<style>
+.upd{position:fixed;left:12px;right:12px;bottom:84px;z-index:200;max-width:520px;margin:0 auto;background:var(--surface,#fff);color:var(--ink,#17203D);border:2px solid var(--accent,#5929AD);border-radius:18px;padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;box-shadow:0 10px 30px rgba(0,0,0,.25);font:500 .95rem/1.35 var(--f-body,system-ui)}
+.upd span{flex:1 1 200px}
+.upd button{min-height:44px;padding:8px 16px;border-radius:999px;border:2px solid var(--accent,#5929AD);background:var(--accent,#5929AD);color:var(--on-accent,#fff);font:600 .95rem var(--f-body,system-ui);cursor:pointer}
+.upd button.sec{background:transparent;color:var(--ink,#17203D);border-color:var(--line,#ccc)}
+</style>
+<script>
+(function(){
+  if(!('serviceWorker' in navigator))return;
+  var teniaControl=!!navigator.serviceWorker.controller,recargando=false;
+  function aviso(w){
+    if(document.getElementById('upd'))return;
+    var d=document.createElement('div');d.id='upd';d.className='upd';d.setAttribute('role','status');
+    var t=document.createElement('span');t.textContent='Hay una versión nueva de Mundo Mente. Tu avance se conserva.';
+    var a=document.createElement('button');a.type='button';a.textContent='Actualizar ahora';
+    var b=document.createElement('button');b.type='button';b.className='sec';b.textContent='Después';
+    a.onclick=function(){a.disabled=true;a.textContent='Actualizando…';w.postMessage('SKIP_WAITING');};
+    b.onclick=function(){d.remove();};
+    d.appendChild(t);d.appendChild(a);d.appendChild(b);document.body.appendChild(d);
+  }
+  navigator.serviceWorker.addEventListener('controllerchange',function(){if(!teniaControl){teniaControl=true;return;}if(recargando)return;recargando=true;location.reload();});
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      if(reg.waiting&&navigator.serviceWorker.controller)aviso(reg.waiting);
+      reg.addEventListener('updatefound',function(){
+        var w=reg.installing;if(!w)return;
+        w.addEventListener('statechange',function(){if(w.state==='installed'&&navigator.serviceWorker.controller)aviso(w);});
+      });
+      var revisar=function(){reg.update().catch(function(){});};
+      document.addEventListener('visibilitychange',function(){if(!document.hidden)revisar();});
+      setInterval(revisar,30*60*1000);
+    }).catch(function(){});
+  });
+})();
+</script>
+</body>
+</html>
